@@ -141,14 +141,20 @@ def propose_voice(profile):
 
 def voice_request_status(request_id):
     with connect() as db:
-        row=db.execute("""SELECT id,state,profile,command_id,expires_at
-                          FROM voice_requests WHERE id=%s""", (request_id,)).fetchone()
+        row=db.execute("""SELECT v.id,v.state,v.profile,v.command_id,v.expires_at,
+                                 c.status AS command_status,c.result AS command_result
+                          FROM voice_requests v
+                          LEFT JOIN commands c ON c.id=v.command_id
+                          WHERE v.id=%s""", (request_id,)).fetchone()
     if not row:
         return {"found": False}
     from datetime import datetime, timezone
     state = row["state"]
     if state == "proposed" and datetime.now(timezone.utc) >= row["expires_at"]:
         state = "expired"
+    result = row["command_result"] or {}
     return {"found": True, "request_id":row["id"],"state":state,
-            "profile":row["profile"],"command_id":row["command_id"],
-            "executed":False if state in ("proposed","expired") else None}
+            "profile":row["profile"], "command_status":row["command_status"],
+            "result_ok":result.get("ok") if row["command_status"]=="completed" else None,
+            "real_rrbridge":result.get("real_rrbridge",False)
+              if row["command_status"]=="completed" else False}
