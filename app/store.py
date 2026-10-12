@@ -7,36 +7,46 @@ from psycopg.rows import dict_row
 def connect():
     return psycopg.connect(os.environ["DATABASE_URL"], row_factory=dict_row)
 
-def init():
-    with connect() as db:
-        db.execute("""CREATE TABLE IF NOT EXISTS samples (
-            session text NOT NULL, seq bigint NOT NULL, segment integer NOT NULL,
-            timestamp_ms bigint NOT NULL, values_json jsonb NOT NULL,
-            received_at timestamptz NOT NULL DEFAULT now(),
-            PRIMARY KEY (session, seq))""")
-        db.execute("""CREATE TABLE IF NOT EXISTS parameters (
-            session text NOT NULL, segment integer NOT NULL, param_id text NOT NULL,
-            name text NOT NULL, units text NOT NULL,
-            PRIMARY KEY (session, segment, param_id))""")
-        db.execute("""CREATE TABLE IF NOT EXISTS events (
-            id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            session text NOT NULL, segment integer NOT NULL,
-            timestamp_ms bigint NOT NULL, message text NOT NULL)""")
-        db.execute("""CREATE TABLE IF NOT EXISTS commands (
-            id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            command text NOT NULL, profile text, status text NOT NULL DEFAULT 'pending',
-            created_at timestamptz NOT NULL DEFAULT now(),
-            leased_until timestamptz, result jsonb,
-            completed_at timestamptz)""")
+from threading import Lock
+_INIT_LOCK = Lock()
+_SCHEMA_READY = False
 
-        db.execute("ALTER TABLE commands ADD COLUMN IF NOT EXISTS target_mode text NOT NULL DEFAULT 'mock'")
-        db.execute("""CREATE TABLE IF NOT EXISTS voice_requests (
-            id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            command text NOT NULL, profile text NOT NULL,
-            state text NOT NULL DEFAULT 'proposed',
-            created_at timestamptz NOT NULL DEFAULT now(),
-            expires_at timestamptz NOT NULL DEFAULT (now() + interval '2 minutes'),
-            command_id bigint)""")
+def init():
+    global _SCHEMA_READY
+    with _INIT_LOCK:
+        if _SCHEMA_READY:
+            return
+        with connect() as db:
+            db.execute("""CREATE TABLE IF NOT EXISTS samples (
+                session text NOT NULL, seq bigint NOT NULL, segment integer NOT NULL,
+                timestamp_ms bigint NOT NULL, values_json jsonb NOT NULL,
+                received_at timestamptz NOT NULL DEFAULT now(),
+                PRIMARY KEY (session, seq))""")
+            db.execute("""CREATE TABLE IF NOT EXISTS parameters (
+                session text NOT NULL, segment integer NOT NULL, param_id text NOT NULL,
+                name text NOT NULL, units text NOT NULL,
+                PRIMARY KEY (session, segment, param_id))""")
+            db.execute("""CREATE TABLE IF NOT EXISTS events (
+                id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                session text NOT NULL, segment integer NOT NULL,
+                timestamp_ms bigint NOT NULL, message text NOT NULL)""")
+            db.execute("""CREATE TABLE IF NOT EXISTS commands (
+                id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                command text NOT NULL, profile text, status text NOT NULL DEFAULT 'pending',
+                created_at timestamptz NOT NULL DEFAULT now(),
+                leased_until timestamptz, result jsonb,
+                completed_at timestamptz)""")
+
+            db.execute("ALTER TABLE commands ADD COLUMN IF NOT EXISTS target_mode text NOT NULL DEFAULT 'mock'")
+            db.execute("""CREATE TABLE IF NOT EXISTS voice_requests (
+                id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                command text NOT NULL, profile text NOT NULL,
+                state text NOT NULL DEFAULT 'proposed',
+                created_at timestamptz NOT NULL DEFAULT now(),
+                expires_at timestamptz NOT NULL DEFAULT (now() + interval '2 minutes'),
+                command_id bigint)""")
+
+        _SCHEMA_READY = True
 
 def ingest(body):
     inserted = duplicates = 0
