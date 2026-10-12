@@ -89,14 +89,17 @@ def submit(command, profile=None):
                          (command,profile)).fetchone()
     return {"id":row["id"],"status":"pending","command":command,"profile":profile}
 
-def claim():
+def claim(mode="mock"):
+    if mode not in ("mock", "real"):
+        raise ValueError("invalid command target mode")
     with connect() as db:
         row=db.execute("""UPDATE commands SET status='leased',
             leased_until=now()+interval '30 seconds'
             WHERE id=(SELECT id FROM commands
-                WHERE status='pending' OR (status='leased' AND leased_until<now())
+                WHERE target_mode=%s AND (
+                  status='pending' OR (status='leased' AND leased_until<now()))
                 ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1)
-            RETURNING id,command,profile,target_mode""").fetchone()
+            RETURNING id,command,profile,target_mode""", (mode,)).fetchone()
     return dict(row) if row else None
 
 def complete(command_id, result):
