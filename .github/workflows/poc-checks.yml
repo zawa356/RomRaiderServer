@@ -47,6 +47,39 @@ jobs:
             -H 'Accept: application/json, text/event-stream' \
             -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
             | python -c 'import sys,json; d=json.load(sys.stdin); n={x["name"] for x in d["result"]["tools"]}; assert {"get_demo_vehicle_status","propose_demo_profile_switch","get_demo_request_status"} <= n'
+      - name: Exercise PostgreSQL command and voice approval round trip
+        run: |
+          docker compose -f compose.yaml -f compose.voice-demo.yaml exec -T api python - <<'PY'
+          import subprocess
+          import sys
+          from app import store
+          store.init()
+          # Existing test tools only create mock instructions.
+          test=store.submit("switch_profile","basic.xml")
+          assert store.claim("real") is None
+          got=store.claim("mock")
+          assert got["id"] == test["id"] and got["target_mode"] == "mock"
+          assert store.complete(got["id"], {"ok":True,"mock":True})
+          assert store.command_status(got["id"])["status"] == "completed"
+          # Anonymous voice tool only creates a proposal.
+          proposal=store.propose_voice("fuel.xml")
+          assert proposal["accepted"] and proposal["state"] == "proposed"
+          assert store.claim("real") is None
+          ident=proposal["request_id"]
+          result=subprocess.run(
+              [sys.executable, "scripts/approve_voice_request.py", str(ident)],
+              input=f"APPROVE {ident}\n", text=True, capture_output=True)
+          assert result.returncode == 0, result.stdout + result.stderr
+          cmd=store.claim("real")
+          assert cmd["target_mode"] == "real" and cmd["profile"] == "fuel.xml"
+          assert store.complete(cmd["id"], {"ok":True,"real_rrbridge":True})
+          status=store.voice_request_status(ident)
+          assert status["state"] == "approved"
+          assert status["command_status"] == "completed"
+          assert status["result_ok"] is True
+          assert status["real_rrbridge"] is True
+          print("mock queue, voice proposal, approval, real queue, completion: PASS")
+          PY
       - name: Capture compose logs on failure
         if: failure()
         run: docker compose -f compose.yaml -f compose.voice-demo.yaml logs --tail=120
