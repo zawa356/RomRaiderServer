@@ -171,7 +171,8 @@
             "enum": [
               "ecu",
               "synthetic"
-            ]
+            ],
+            "description": "Actual ECU or synthetic self-test observations."
           },
           "sequence": {
             "type": "integer",
@@ -221,9 +222,11 @@
           "source_kind": {
             "type": "string",
             "enum": [
+              "agent",
               "ecu",
               "synthetic"
-            ]
+            ],
+            "description": "Originator of the event: local agent, ECU-related, or synthetic test."
           },
           "event_type": {
             "type": "string",
@@ -266,9 +269,11 @@
           "source_kind": {
             "type": "string",
             "enum": [
+              "agent",
               "ecu",
               "synthetic"
-            ]
+            ],
+            "description": "Originator of the event: local agent, ECU-related, or synthetic test."
           },
           "event_type": {
             "type": "string",
