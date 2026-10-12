@@ -3,7 +3,9 @@
 This process deliberately has NO command tools and exposes only synthetic test
 session poc_001, seq=1. Never use it for real ECU telemetry.
 """
+import os
 from mcp.server.fastmcp import FastMCP
+from . import store
 from .store import connect
 
 mcp = FastMCP(
@@ -46,5 +48,26 @@ def get_demo_vehicle_status() -> dict:
         "message": "Historical synthetic test data, not a current vehicle reading",
     }
 
+@mcp.tool()
+def propose_demo_profile_switch(profile: str) -> dict:
+    """Create a short-lived profile-switch PROPOSAL ONLY, not an executable vehicle
+    command. Requires explicit physical operator approval on X270/server afterward.
+    Limited to basic.xml and fuel.xml. No real-world effect from this tool.
+    """
+    if os.getenv("ALLOW_VOICE_PROPOSALS", "false").lower() != "true":
+        return {"accepted": False, "error": "voice proposals disabled"}
+    try:
+        store.init()
+        return store.propose_voice(profile)
+    except ValueError as exc:
+        return {"accepted": False, "error": str(exc)}
+
+@mcp.tool()
+def get_demo_request_status(request_id: int) -> dict:
+    """Check the state of a previously proposed (not automatically executed) demo request."""
+    store.init()
+    return store.voice_request_status(request_id)
+
 if __name__ == "__main__":
+    store.init()
     mcp.run(transport="streamable-http")
