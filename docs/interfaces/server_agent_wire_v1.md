@@ -6,9 +6,9 @@
 | 仕様版 | **protocol v1**（本書の設計選択。現行PoCとの互換性なし） |
 | 文書版 | 0.2.0 / 2026-10-12 |
 | 状態 | **設計案・実装／実機検証前**。ユーザーから文書の技術判断を委任されている |
-| 親文書 | [外部IF設計](server_agent.md) / [論理データ設計](../logical_data_model.md) / [要件定義](../system_requirements.md) |
+| 親文書 | [外部IF設計](server_agent.md) / [論理データ設計](../logical_data_model.md) / [要件定義](../system_requirements.md) |\n| 機械可読API定義 | [OpenAPI 3.1 JSON](agent_api_v1.openapi.json) |
 
-本書の「必須」「MUST」は**製品版を実装するときの契約**を表す。現行PoCに実装済みであることを意味しない。実装中に変更した場合は契約版と試験を更新する。
+本書の「必須」「MUST」は**製品版を実装するときの契約**を表す。対応するJSONリクエスト・レスポンス構造の機械可読な定義は[OpenAPI v1](agent_api_v1.openapi.json)を参照する。意味上の保証（ACK・再送・順序・安全）は本書を正本とする。現行PoCに実装済みであることを意味しない。実装中に変更した場合は契約版と試験を更新する。
 
 ## 1. 決定事項
 
