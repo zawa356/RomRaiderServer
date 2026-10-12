@@ -4,13 +4,45 @@ Small, isolated proof of concept for **ChatGPT Live → Remote MCP → command q
 
 **Not production-ready. It cannot operate a real vehicle.** The mock agent never calls RomRaider or RRBridge. Commands submitted by MCP are disabled by default.
 
+## ChatGPT Live without OAuth: isolated read-only demo
+
+ChatGPT's custom MCP registration UI offers OAuth, No authentication, or OAuth/No authentication; it does **not** offer a static Bearer header input. The existing secured `/mcp` endpoint must remain protected.
+
+For a **temporary proof of concept only**, enable a separate, public **read-only** MCP that exposes a single safe test row already loaded into the database (`poc_001`, `segment=1`, `seq=1`; only `TEST_RPM` and `TEST_ECT`). It has **no command submission, SQL access, access to other sessions, or ECU control tool**. Do not change it to return live vehicle data without introducing user authentication.
+
+This is an optional Compose overlay so it does not overwrite local `compose.yaml` edits (such as the host port changed to `18767`).
+
+```bash
+git pull --ff-only
+docker compose -f compose.yaml -f compose.voice-demo.yaml up -d --build voice-demo
+docker compose -f compose.yaml -f compose.voice-demo.yaml restart proxy
+docker compose -f compose.yaml -f compose.voice-demo.yaml ps
+```
+
+On the current test host where the proxy binds to `127.0.0.1:18767`:
+
+```bash
+curl -si http://127.0.0.1:18767/mcp  # Must remain 401
+curl -sS -X POST http://127.0.0.1:18767/voice-demo/mcp \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_demo_vehicle_status","arguments":{}}}' | python3 -m json.tool
+```
+
+Expected: `demo=true`, `live=false`, `engine_rpm=2500`, `coolant_temperature_c=87`, `isError=false` (provided that the prior `poc_001` sample is present).
+
+With the existing **temporary** Cloudflare Tunnel, register
+`https://<current-quick-tunnel-host>/voice-demo/mcp` in ChatGPT with authentication **なし / No authentication**. Do **not** use the protected `/mcp` path. Try: "RomRaiderServer Voice Demo の get_demo_vehicle_status ツールを実行して、ダミーのエンジン回転数と水温を読み上げてください。"
+
+**Any Internet user who knows the URL can query these two deliberately fake demo values.** Stop the quick tunnel when finished; remove the overlay in production. The main `/mcp` remains Bearer-protected, and the agent/ingest API still require their independent tokens. For genuine remote control and real vehicle data, implement OAuth and a safe X270 Supervisor first.
+
 ## Quick start
 
 1. Copy `.env.example` to `.env`. Choose **different long random secrets** for `POSTGRES_PASSWORD`, `INGEST_TOKEN`, `AGENT_TOKEN`, and `MCP_TOKEN`; update the password in `DATABASE_URL` to match (URL-encode special characters, or use alphanumeric secrets).
 2. Run `docker compose up -d --build`.
 3. Check `curl http://127.0.0.1:8080/health`.
 4. Run a simulated X270 in a separate terminal: `docker compose run --rm -e SERVER_URL=http://proxy:80 api python scripts/mock_agent.py`.
-5. Register the public HTTPS URL ending in `/mcp` as a custom MCP plugin. Use the `Authorization: Bearer <MCP_TOKEN>` header when supported.
+5. For ChatGPT Live without OAuth, use the isolated `/voice-demo/mcp` overlay described above. The secured `/mcp` is not directly registerable as a Bearer-header custom MCP in the current UI.
 
 The Compose reverse proxy **binds only 127.0.0.1:8080**, not the public Internet. For a temporary ChatGPT Live test, expose this port using a secure HTTPS tunnel. Do not publish port 8080 or the MCP app directly. Authentication occurs at the Caddy proxy. The MCP backend trusts the proxy and must not be separately exposed.
 
