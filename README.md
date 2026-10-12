@@ -36,6 +36,24 @@ With the existing **temporary** Cloudflare Tunnel, register
 
 **Any Internet user who knows the URL can query these two deliberately fake demo values.** Stop the quick tunnel when finished; remove the overlay in production. The main `/mcp` remains Bearer-protected, and the agent/ingest API still require their independent tokens. For genuine remote control and real vehicle data, implement OAuth and a safe X270 Supervisor first.
 
+## Verification milestones
+
+### 2026-10-12 — ChatGPT Live (Android) + Remote MCP (user-reported PASS)
+
+**Verified by the user in an actual running Docker environment:**
+
+- Container startup and PostgreSQL health check.
+- Local Caddy HTTP `/health` returned HTTP 200; protected `/mcp` returned HTTP 401 without a token.
+- Authenticated MCP `initialize`, `tools/list` (four tools) and `get_vehicle_status` calls returned successfully.
+- Ingest API accepted one synthetic M/S TSV sample, `session=poc_001`, `TEST_RPM=2500`, `TEST_ECT=87`, `samples=1`, `duplicates=0`.
+- Protected MCP readback returned the same sample from PostgreSQL (`isError=false`).
+- Cloudflare Quick Tunnel established externally reachable HTTPS; unauthenticated request to protected `/mcp` returned HTTP 401.
+- A dedicated, no-auth **read-only** `/voice-demo/mcp` was registered in ChatGPT. User confirmed that ChatGPT Live returned a response successfully. The demo only exposes synthetic `poc_001` values.
+
+**Not yet verified:** whether mock X270 command polling/acknowledgment works end-to-end; actual RRBridge and ECU telemetry; real vehicle control; OAuth authorization, reliability, throughput and operational security.
+
+This is a user-reported test outcome, not an automated CI result. The public no-auth demo must remain limited to synthetic test data and be disabled after testing.
+
 ## Quick start
 
 1. Copy `.env.example` to `.env`. Choose **different long random secrets** for `POSTGRES_PASSWORD`, `INGEST_TOKEN`, `AGENT_TOKEN`, and `MCP_TOKEN`; update the password in `DATABASE_URL` to match (URL-encode special characters, or use alphanumeric secrets).
