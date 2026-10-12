@@ -1,4 +1,10 @@
 :80 {
+    # Only synthetic poc_001 readings. No command tools or real sessions.
+    # This one path is intentionally public for temporary Live voice testing.
+    handle /voice-demo/mcp* {
+        uri strip_prefix /voice-demo
+        reverse_proxy voice-demo:8002
+    }
     handle /mcp* {
         @authorized header Authorization "Bearer {$MCP_TOKEN}"
         route {
