@@ -2,13 +2,13 @@
 
 Small, isolated proof of concept for **ChatGPT Live → Remote MCP → command queue → simulated X270**, and **RRBridge TSV → Ingest API → PostgreSQL → MCP**.
 
-**Not production-ready. It cannot operate a real vehicle.** The mock agent never calls RomRaider or RRBridge. Commands submitted by MCP are disabled by default.
+**Not production-ready.** The mock agent never calls RomRaider or RRBridge. The explicit X270 Supervisor can call the local RRBridge only when armed and after server-admin approval; all remote control remains disabled by default.
 
-## ChatGPT Live without OAuth: isolated read-only demo
+## ChatGPT Live without OAuth: restricted demo and non-executing proposals
 
 ChatGPT's custom MCP registration UI offers OAuth, No authentication, or OAuth/No authentication; it does **not** offer a static Bearer header input. The existing secured `/mcp` endpoint must remain protected.
 
-For a **temporary proof of concept only**, enable a separate, public **read-only** MCP that exposes a single safe test row already loaded into the database (`poc_001`, `segment=1`, `seq=1`; only `TEST_RPM` and `TEST_ECT`). It has **no command submission, SQL access, access to other sessions, or ECU control tool**. Do not change it to return live vehicle data without introducing user authentication.
+For a **temporary proof of concept only**, enable a separate public demo MCP that reads a single synthetic test row already loaded into the database (`poc_001`, `segment=1`, `seq=1`; only `TEST_RPM` and `TEST_ECT`). It has **no executable command submission, SQL access, access to other sessions, or ECU control tool**. Optional tools may store short-lived proposals but cannot dispatch them without interactive server-admin approval and X270 local arming. Do not change it to return live vehicle data without introducing user authentication.
 
 This is an optional Compose overlay so it does not overwrite local `compose.yaml` edits (such as the host port changed to `18767`).
 
@@ -53,6 +53,8 @@ With the existing **temporary** Cloudflare Tunnel, register
 **Not yet verified:** whether mock X270 command polling/acknowledgment works end-to-end; actual RRBridge and ECU telemetry; real vehicle control; OAuth authorization, reliability, throughput and operational security.
 
 This is a user-reported test outcome, not an automated CI result. The public no-auth demo must remain limited to synthetic test data and be disabled after testing.
+
+For the proposed voice-to-X270 bench command path and full safeguards, see [C14 control PoC contract](docs/control_protocol_poc.md). **Do not run a real-vehicle test while driving.**
 
 ## Quick start
 
