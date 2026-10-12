@@ -167,7 +167,7 @@ MCP認証の具体方式はChatGPT通常チャット／Liveの実対応を検証
 | 要件定義 RLG-SRS | docs/system_requirements.md | 何を満たすか。承認済 v1.0.0 |
 | 本書 RLG-BD | docs/basic_design.md | どう分担・構成するか。本初稿 |
 | 外部IF概要 RLG-IF-SA | docs/interfaces/server_agent.md | Agent–Server間の意味論・境界 |
-| 外部通信契約v1 RLG-IF-SA-WIRE | docs/interfaces/server_agent_wire_v1.md | HTTP/JSON・認証・ID・原子的ACK・エラーの具体仕様 |\n| 論理データ設計 RLG-LDM | docs/logical_data_model.md | 保存・検索単位、エンティティ関連 |
+| 外部通信契約v1 RLG-IF-SA-WIRE | docs/interfaces/server_agent_wire_v1.md、docs/interfaces/agent_api_v1.openapi.json | HTTP/JSON・認証・ID・原子的ACK・エラー、OpenAPI形式の契約 |\n| 論理データ設計 RLG-LDM | docs/logical_data_model.md | 保存・検索単位、エンティティ関連 |
 | MCPインターフェース RLG-IF-MCP | docs/interfaces/mcp.md | ツール契約と列・行・複合検索、権限 |\n| 車載安全・検証 RLG-SAFETY-VAL | docs/safety_validation.md | ローカル安全ゲート、フォールバック、実機検証条件 |\n| 要件対応 RLG-TRACE | docs/requirements_traceability.md | SRS全IDと設計・検証観点の対応 |
 | PoC接続規約 | RomRaider_agent/docs/10_interfaces.md | **現行PoC専用**の実装上の正本。製品IFと混同しない |
 
