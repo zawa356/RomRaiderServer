@@ -80,6 +80,41 @@ jobs:
           assert status["real_rrbridge"] is True
           print("mock queue, voice proposal, approval, real queue, completion: PASS")
           PY
+      - name: Verify selftest-only filtering and block real ECU leakage
+        run: |
+          docker compose -f compose.yaml -f compose.voice-demo.yaml exec -T api python - <<'PY'
+          from app import store
+          import time
+          store.init()
+          ts = int(time.time()*1000)
+          bogus="ci_unknown"
+          # A TEST-looking sample alone must NOT become public.
+          store.ingest(f"S\t{bogus}\t1\t1\t{ts}\tTEST_RPM=900,TEST_TPS=5,TEST_MRP=-55\n")
+          assert not store.latest_selftest()["available"]
+          sess="ci_rrbridge_selftest"
+          body="\n".join([
+              f"M\t{sess}\t1\tTEST_RPM\tSelftest Engine Speed\trpm",
+              f"M\t{sess}\t1\tTEST_TPS\tSelftest Throttle\t%",
+              f"M\t{sess}\t1\tTEST_MRP\tSelftest Manifold Rel Pressure\tkPa",
+              f"E\t{sess}\t1\t{ts}\tselftest start count=20 hz=5",
+              f"S\t{sess}\t1\t1\t{ts}\tTEST_RPM=3233,TEST_TPS=43.93,TEST_MRP=57"
+          ])
+          assert store.ingest(body)["samples"]==1
+          result=store.latest_selftest()
+          assert result["available"] and result["synthetic"] and not result["live"]
+          assert result["session"] == sess and result["engine_rpm"] == 3233
+          assert result["throttle_percent"] == 43.93
+          assert result["manifold_relative_pressure_kpa"] == 57
+          # Even in an otherwise verified test session, any real field means exclusion.
+          store.ingest(f"S\t{sess}\t1\t2\t{ts+1}\tTEST_RPM=1000,TEST_TPS=5,TEST_MRP=-50,P8=1000\n")
+          assert store.latest_selftest()["seq"]==1
+          print("synthetic-only test values exposed; forged and mixed real-value samples rejected")
+          PY
+          curl -fsS -X POST http://127.0.0.1:8080/voice-demo/mcp \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_latest_rrbridge_selftest","arguments":{}}}' \
+            | python -c 'import sys,json; d=json.load(sys.stdin); p=json.loads(d["result"]["content"][0]["text"]); assert not d["result"]["isError"] and p["available"] and p["engine_rpm"]==3233 and not p["live"]'
       - name: Capture compose logs on failure
         if: failure()
         run: docker compose -f compose.yaml -f compose.voice-demo.yaml logs --tail=120
