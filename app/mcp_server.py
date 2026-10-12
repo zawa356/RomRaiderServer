@@ -26,7 +26,7 @@ def propose_measurement_command(command: str, profile: str = "") -> dict:
     try:
         import re
         if command == "switch_profile":
-            if not re.fullmatch(r"[A-Za-z0-9_.-]+\\.xml", profile) or profile.startswith("."):
+            if not re.fullmatch(r"[A-Za-z0-9_.-]+\.xml", profile) or profile.startswith("."):
                 return {"ok": False, "error": "invalid profile"}
         elif profile:
             return {"ok": False, "error": "unexpected profile"}
