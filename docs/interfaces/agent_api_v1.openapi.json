@@ -3,7 +3,7 @@
   "info": {
     "title": "RomLogger Server–Agent API",
     "version": "1.0.0-draft",
-    "description": "Design contract for product v1. This OpenAPI is documentation, NOT proof of an implemented or tested endpoint. Authoritative semantics: docs/interfaces/server_agent_wire_v1.md."
+    "description": "Product v1 API design contract. Documentation only (not proof of implementation/test). Event/gap may predate a segment and omit its ID; observation MUST specify one. See docs/interfaces/server_agent_wire_v1.md for semantics."
   },
   "servers": [
     {
@@ -196,7 +196,6 @@
         "required": [
           "kind",
           "record_id",
-          "segment_id",
           "captured_at",
           "source_kind",
           "event_type",
@@ -212,8 +211,16 @@
             "format": "uuid"
           },
           "segment_id": {
-            "type": "string",
-            "format": "uuid"
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "May be unknown for events before the first measurement segment."
           },
           "captured_at": {
             "type": "string",
@@ -243,7 +250,6 @@
         "required": [
           "kind",
           "record_id",
-          "segment_id",
           "captured_at",
           "source_kind",
           "event_type",
@@ -259,8 +265,16 @@
             "format": "uuid"
           },
           "segment_id": {
-            "type": "string",
-            "format": "uuid"
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "May be unknown for events before the first measurement segment."
           },
           "captured_at": {
             "type": "string",
