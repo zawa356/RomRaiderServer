@@ -90,3 +90,21 @@ def test_rrbridge_profile_requires_guard_and_allowlist(monkeypatch):
     with pytest.raises(s.Refused):
         s.validate_rrbridge_status("http://127.0.0.1:18765","",
                                    "filelog_start","","")
+
+def test_real_mode_never_accepts_mock_queue_items(tmp_path):
+    p = tmp_path / "receipts.json"
+    cmd = {"id": 987, "command": "switch_profile",
+           "profile": "basic.xml", "target_mode": "mock"}
+    result = s.handle_command(cmd, real=True, rr_url="",
+                              rr_token="", spool_dir="", receipt_file=p)
+    assert result["ok"] is False
+    assert not p.exists()
+
+def test_dry_run_never_accepts_real_queue_items(tmp_path):
+    p = tmp_path / "receipts.json"
+    cmd = {"id": 988, "command": "switch_profile",
+           "profile": "basic.xml", "target_mode": "real"}
+    result = s.handle_command(cmd, real=False, rr_url="",
+                              rr_token="", spool_dir="", receipt_file=p)
+    assert result["ok"] is False
+    assert not p.exists()
