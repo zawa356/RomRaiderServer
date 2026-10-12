@@ -8,7 +8,7 @@
 | [システム基本設計](basic_design.md) | RLG-BD | 主要構成、責務、処理、開発順序 |
 | [論理データ設計](logical_data_model.md) | RLG-LDM | 車両・端末・走行・サンプル・タスク・解析の論理関係 |
 | [Server–Agent IF 概要](interfaces/server_agent.md) | RLG-IF-SA | IF-001〜007の責務・接続面と背景 |
-| [Server–Agent 通信契約v1](interfaces/server_agent_wire_v1.md) | RLG-IF-SA-WIRE | **具体的なAPI形式・ACK・ID・エラーの製品v1設計** |
+| [Server–Agent 通信契約v1](interfaces/server_agent_wire_v1.md) | RLG-IF-SA-WIRE | **具体的なAPI形式・ACK・ID・エラーの製品v1設計** |\n| [Agent API OpenAPI 3.1](interfaces/agent_api_v1.openapi.json) | RLG-IF-SA-WIRE（機械可読） | Server側のモック・検証・実装向けAPIスキーマ |
 | [MCPインターフェース](interfaces/mcp.md) | RLG-IF-MCP | ツール一覧、行列指定検索、認証、計画操作 |
 | [安全・技術検証計画](safety_validation.md) | RLG-SAFETY-VAL | 実車操作のガード、復旧、段階的なVAL試験 |
 | [要件トレーサビリティ](requirements_traceability.md) | RLG-TRACE | SRS全119件の設計先・検証観点への対応 |
