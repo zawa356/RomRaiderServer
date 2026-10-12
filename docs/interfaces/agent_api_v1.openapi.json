@@ -720,7 +720,8 @@
             "enum": [
               "apply_measurement_plan",
               "suspend_ai_changes",
-              "restore_basic_logging"
+              "restore_basic_logging",
+              "request_local_recovery"
             ]
           },
           "task_id": {
