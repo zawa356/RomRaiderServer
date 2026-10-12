@@ -3,9 +3,9 @@
 | 項目 | 内容 |
 | --- | --- |
 | 文書ID | RLG-BD |
-| 版 | 0.2.0 |
+| 版 | 1.0.0 |
 | 作成日 | 2026-10-12 |
-| 状態 | **基本設計・通信規約の統合ドラフト（実装／実車検証前）** |
+| 状態 | **基本設計ベースライン完成（実装／実車検証前）** |
 | 要件の正本 | [システム要件定義書 v1.0.0](system_requirements.md) |
 | 適用対象 | RomLogger Server／車載クライアント／MCP経由のAI連携 |
 | 変更対象 | 本書は設計文書。既存PoCの実装・安全ガードは変更しない |
@@ -14,7 +14,7 @@
 
 本書は、要件定義書 RLG-SRS v1.0.0 に対する製品の**論理アーキテクチャ、責務分界、主要処理、データ保全、安全制御、配備、開発順序**を定める。別文書の [Server–Agent外部インターフェース概要](interfaces/server_agent.md)、**[具体通信契約v1](interfaces/server_agent_wire_v1.md)**、[MCPインターフェース設計](interfaces/mcp.md)、[論理データ設計書](logical_data_model.md)、[安全・検証計画](safety_validation.md) が本書を補完する。
 
-判断の優先順位は、承認済みSRS → 承認された基本設計 → 外部IF契約 → 詳細設計・実装とする。基本設計内に残る技術未検証事項は承認済み要件の達成宣言ではない。
+判断の優先順位は、承認済みSRS → 基本設計 → 外部IF契約 → 詳細設計・実装とする。基本設計内に残る技術未検証事項は承認済み要件の達成宣言ではない。
 
 PoCは技術検証資産であり、ソース／クラス／通信形式／テーブル定義／暫定安全制限の互換維持義務はない。**要件を満たし、コスト上合理的な既存部分は再利用する**。RomRaider本体改変を前提とせず、既存RRBridge（Java Agent）をアダプターの第一候補とする。ただし、実ECU→Serverの連続したサンプル取得は未検証であり、実機検証まで確実に動作すると断定しない。
 
@@ -168,7 +168,7 @@ MCP認証の具体方式はChatGPT通常チャット／Liveの実対応を検証
 | 本書 RLG-BD | docs/basic_design.md | どう分担・構成するか。本初稿 |
 | 外部IF概要 RLG-IF-SA | docs/interfaces/server_agent.md | Agent–Server間の意味論・境界 |
 | 外部通信契約v1 RLG-IF-SA-WIRE | docs/interfaces/server_agent_wire_v1.md、docs/interfaces/agent_api_v1.openapi.json | HTTP/JSON・認証・ID・原子的ACK・エラー、OpenAPI形式の契約 |\n| 論理データ設計 RLG-LDM | docs/logical_data_model.md | 保存・検索単位、エンティティ関連 |
-| MCPインターフェース RLG-IF-MCP | docs/interfaces/mcp.md | ツール契約と列・行・複合検索、権限 |\n| 車載安全・検証 RLG-SAFETY-VAL | docs/safety_validation.md | ローカル安全ゲート、フォールバック、実機検証条件 |\n| 要件対応 RLG-TRACE | docs/requirements_traceability.md | SRS全IDと設計・検証観点の対応 |
+| MCPインターフェース RLG-IF-MCP | docs/interfaces/mcp.md | ツール契約と列・行・複合検索、権限 |\n| 車載安全・検証 RLG-SAFETY-VAL | docs/safety_validation.md | ローカル安全ゲート、フォールバック、実機検証条件 |\n| 要件対応 RLG-TRACE | docs/requirements_traceability.md | SRS全IDと設計・検証観点の対応 |\n| 詳細設計 RLG-DD | docs/server_detailed_design.md、docs/database_detailed_design.md、docs/agent_detailed_design.md、docs/mcp_detailed_design.md、docs/operations_detailed_design.md | Server／DB／Agent／MCP／運用の実装前詳細仕様 |\n| 試験計画 RLG-DD-TEST | docs/test_acceptance_plan.md | 契約・実ECU・MCP・各開発段階の受入条件 |\n| 設計判断台帳 RLG-ADR | docs/design_decisions.md | 合意済み／委任判断／技術検証待ちの分類 |
 | PoC接続規約 | RomRaider_agent/docs/10_interfaces.md | **現行PoC専用**の実装上の正本。製品IFと混同しない |
 
 Server側の文書を製品全体の正本とし、Agent側はリンクで参照。実装の分岐時にはPoC規約と新製品規約の適用範囲を明示する。
@@ -247,4 +247,4 @@ Server側の文書を製品全体の正本とし、Agent側はリンクで参照
 
 | 日付 | 版 | 変更 |
 | --- | --- | --- |
-| 2026-10-12 | 0.1.0 | BD-001〜008の会話合意を初稿として統合。未決／未検証事項を明示 |\n| 2026-10-12 | 0.2.0 | Server–Agent通信v1・MCP IF・安全検証・要件追跡資料との整合を更新 |
+| 2026-10-12 | 0.1.0 | BD-001〜008の会話合意を初稿として統合。未決／未検証事項を明示 |\n| 2026-10-12 | 0.2.0 | Server–Agent通信v1・MCP IF・安全検証・要件追跡資料との整合を更新 |\n| 2026-10-12 | **1.0.0** | Server／DB／Agent／MCP／運用・テスト詳細設計を統合し、設計ベースライン化。技術検証未完了事項は継続管理 |
