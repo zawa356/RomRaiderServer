@@ -29,6 +29,8 @@ def init():
             leased_until timestamptz, result jsonb,
             completed_at timestamptz)""")
 
+        db.execute("ALTER TABLE commands ADD COLUMN IF NOT EXISTS target_mode text NOT NULL DEFAULT 'mock'")
+
 def ingest(body):
     inserted = duplicates = 0
     with connect() as db:
@@ -71,18 +73,19 @@ def latest():
     return dict(row) if row else {"status":"no_samples"}
 
 ALLOWED = {"logging_start", "logging_stop", "filelog_start", "filelog_stop", "switch_profile"}
+PROFILES = {"basic.xml", "fuel.xml"}
 import re
 
 def submit(command, profile=None):
     if command not in ALLOWED:
         raise ValueError("command not allowed")
     if command == "switch_profile":
-        if not profile or not re.fullmatch(r"[A-Za-z0-9_.-]+\.xml", profile) or profile.startswith("."):
-            raise ValueError("invalid profile")
+        if profile not in PROFILES:
+            raise ValueError("profile is not in server-side allowlist")
     elif profile:
         raise ValueError("profile not accepted for this command")
     with connect() as db:
-        row = db.execute("INSERT INTO commands(command,profile) VALUES (%s,%s) RETURNING id",
+        row = db.execute("INSERT INTO commands(command,profile,target_mode) VALUES (%s,%s,'mock') RETURNING id",
                          (command,profile)).fetchone()
     return {"id":row["id"],"status":"pending","command":command,"profile":profile}
 
@@ -93,7 +96,7 @@ def claim():
             WHERE id=(SELECT id FROM commands
                 WHERE status='pending' OR (status='leased' AND leased_until<now())
                 ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1)
-            RETURNING id,command,profile""").fetchone()
+            RETURNING id,command,profile,target_mode""").fetchone()
     return dict(row) if row else None
 
 def complete(command_id, result):
@@ -106,5 +109,5 @@ def complete(command_id, result):
 
 def command_status(command_id):
     with connect() as db:
-        row=db.execute("SELECT id,command,profile,status,result FROM commands WHERE id=%s",(command_id,)).fetchone()
+        row=db.execute("SELECT id,command,profile,target_mode,status,result FROM commands WHERE id=%s",(command_id,)).fetchone()
     return dict(row) if row else None
