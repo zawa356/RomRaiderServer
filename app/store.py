@@ -205,7 +205,31 @@ def latest_selftest():
               AND EXISTS (
                 SELECT 1 FROM events AS e
                 WHERE e.session=s.session AND e.segment=s.segment
-                  AND e.message LIKE 'selftest start count=% hz=%')
+                  AND e.message ~ '^selftest start count=[0-9]+ hz=[0-9]+)
+            ORDER BY s.received_at DESC, s.seq DESC LIMIT 1
+        """).fetchone()
+    if not row:
+        return {
+            "available": False,
+            "synthetic": True,
+            "live": False,
+            "message": "No verified RRBridge synthetic selftest sample found.",
+        }
+    values = row["values_json"]
+    return {
+        "available": True,
+        "synthetic": True,
+        "live": False,
+        "session": row["session"],
+        "segment": row["segment"],
+        "seq": row["seq"],
+        "timestamp_ms": row["timestamp_ms"],
+        "engine_rpm": float(values["TEST_RPM"]),
+        "throttle_percent": float(values["TEST_TPS"]),
+        "manifold_relative_pressure_kpa": float(values["TEST_MRP"]),
+        "message": "RRBridge selftest synthetic data; not a live ECU reading.",
+    }
+)
             ORDER BY s.received_at DESC, s.seq DESC LIMIT 1
         """).fetchone()
     if not row:
