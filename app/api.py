@@ -1,6 +1,7 @@
 """RRBridge-compatible ingestion and outbound-polling command API."""
 import os
 from contextlib import asynccontextmanager
+from typing import Literal
 from fastapi import FastAPI, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 from . import store
@@ -37,8 +38,8 @@ async def ingest(request: Request):
         raise HTTPException(400, str(exc))
 
 @app.get("/agent/commands/next", dependencies=[Depends(agent_auth)])
-def next_command():
-    return {"command": store.claim()}
+def next_command(mode: Literal["mock", "real"] = "mock"):
+    return {"command": store.claim(mode=mode)}
 
 class Completion(BaseModel):
     result: dict
