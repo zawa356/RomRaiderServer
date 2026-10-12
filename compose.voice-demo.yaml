@@ -1,0 +1,12 @@
+# Optional, isolated no-auth demo MCP. Never deploy with real vehicle data.
+# Preserve local compose.yaml changes (e.g. host port 18767) using -f.
+services:
+  voice-demo:
+    build: .
+    command: python -m app.voice_demo_server
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
