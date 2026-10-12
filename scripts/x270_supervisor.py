@@ -166,6 +166,8 @@ def handle_command(item, *, real, rr_url, rr_token, spool_dir, receipt_file):
     command = item.get("command")
     profile = item.get("profile") or ""
     validate_command(command, profile)
+    if real and item.get("target_mode") != "real":
+        raise Refused("mock/test commands cannot be executed on real RRBridge")
     # The receipt is written BEFORE any local side effect to avoid replay execution.
     receipts[key] = {"state": "started", "command": command, "profile": profile}
     write_json_atomic(receipt_file, receipts)
