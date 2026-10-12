@@ -6,7 +6,7 @@
 | 版 | 0.2.0 / 2026-10-12 |
 | 状態 | 製品向け論理IF概要（詳細ワイヤ契約は別文書） |
 | 上位 | [要件定義](../system_requirements.md)、[基本設計](../basic_design.md) |
-| 具体仕様の正本 | **[Server–Agent通信契約v1](server_agent_wire_v1.md)** |
+| 具体仕様の正本 | **[Server–Agent通信契約v1](server_agent_wire_v1.md)** / [OpenAPI 3.1](agent_api_v1.openapi.json) |
 | PoC | [RomRaider_agent/docs/10_interfaces.md](https://github.com/zawa356/RomRaider_agent/blob/main/docs/10_interfaces.md)（別世代） |
 
 本書は、通信の**目的・責任・整合性の原則**をまとめた設計概要である。URI・HTTPメソッド、JSONのフィールドと値、ACKの原子性、認証・エラーコードについては **[RLG-IF-SA-WIRE](server_agent_wire_v1.md) が優先**し、異なる重複規約を作らない。既存PoCのC1〜C14とは互換性を保証しない。
@@ -84,7 +84,7 @@ sequenceDiagram
 
 ## 5. v1の具体通信契約と検証
 
-**実装者は必ず [Server–Agent通信契約v1](server_agent_wire_v1.md) を読むこと。**
+**実装者は必ず [Server–Agent通信契約v1](server_agent_wire_v1.md) と [OpenAPI 3.1](agent_api_v1.openapi.json) を読むこと。**
 
 同文書で既定選択した主な事項：
 
