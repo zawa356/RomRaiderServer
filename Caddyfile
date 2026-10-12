@@ -1,6 +1,6 @@
 :80 {
-    # Only synthetic poc_001 readings. No command tools or real sessions.
-    # This one path is intentionally public for temporary Live voice testing.
+    # Public PoC: synthetic readings and short-lived proposals only. NO executable commands.
+    # Leave full /mcp and /agent endpoints protected; stop this Quick Tunnel after testing.
     handle /voice-demo/mcp* {
         uri strip_prefix /voice-demo
         reverse_proxy voice-demo:8002
