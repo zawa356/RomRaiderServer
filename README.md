@@ -36,6 +36,52 @@ With the existing **temporary** Cloudflare Tunnel, register
 
 **Any Internet user who knows the URL can query these two deliberately fake demo values.** Stop the quick tunnel when finished; remove the overlay in production. The main `/mcp` remains Bearer-protected, and the agent/ingest API still require their independent tokens. For genuine remote control and real vehicle data, implement OAuth and a safe X270 Supervisor first.
 
+### Live demo: latest verified RRBridge selftest values
+
+The public `/voice-demo/mcp` includes `get_latest_rrbridge_selftest`.
+It returns only `TEST_RPM` (rpm), `TEST_TPS` (%), and `TEST_MRP` (kPa)
+from the **newest verified RRBridge synthetic selftest sample**. The query
+requires *all* of the following for the same session/segment:
+
+- Exactly those three `TEST_*` sample keys, **no other keys**.
+- Matching `parameters` metadata with the precise selftest names and units emitted by RRBridge `Stream.selftest()`.
+- A matching `selftest start count=<n> hz=<n>` event in the same segment.
+
+Samples missing proof, or containing even one real ECU parameter such as `P8`,
+cannot appear in this public tool. This is a synthetic-only debugging facility,
+**not** a real-time ECU monitor. The result contains `timestamp_ms`, `session`,
+`segment`, `seq`, and `live=false`; it may be historical. It never performs
+RomRaider operations. Existing tools `get_demo_vehicle_status`,
+`propose_demo_profile_switch` and `get_demo_request_status` remain available.
+
+After pushing new code to the repository:
+
+```bash
+git pull --ff-only
+docker compose -f compose.yaml -f compose.voice-demo.yaml up -d --build voice-demo
+```
+
+Only the `voice-demo` container is recreated. In the ChatGPT custom MCP UI,
+refresh/reconnect the existing custom MCP so it discovers
+`get_latest_rrbridge_selftest`.
+
+When an X270 selftest has been ingested, ask ChatGPT Live:
+
+> RomRaiderServer Voice Demo の get_latest_rrbridge_selftest を実行し、最後に受信した合成データの回転数、スロットル開度、相対圧力とサンプル番号を教えて。実ECUの値ではないことも明言して。
+
+To verify without ChatGPT:
+
+```bash
+curl -sS -X POST http://127.0.0.1:18767/voice-demo/mcp \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"get_latest_rrbridge_selftest","arguments":{}}}' \
+  | python3 -m json.tool
+```
+
+The local `/mcp` endpoint remains Bearer-protected and can read all samples,
+so do not expose its token in the no-auth demo.
+
 ## Verification milestones
 
 ### 2026-10-12 — ChatGPT Live (Android) + Remote MCP (user-reported PASS)
