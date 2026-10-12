@@ -1,50 +1,81 @@
-# RomLogger 文書一覧・正本管理
+# RomLogger 設計ドキュメント体系
 
-**最初に読む:** [システム要件定義書 v1.0.0](system_requirements.md) → [システム基本設計書](basic_design.md) → [Server–Agent通信契約v1](interfaces/server_agent_wire_v1.md)。
+| 項目 | 内容 |
+| --- | --- |
+| 設計基準 | **RomLogger製品設計ベースライン v1.0（2026-10-12）** |
+| 要件正本 | [RLG-SRS v1.0.0](system_requirements.md)（2026-10-12ユーザー承認済み） |
+| 設計範囲 | 基本設計・Server/Agent/MCP/DB詳細設計・外部IF契約・運用・テスト |
+| 実装状態 | **設計文書のみ。製品コード変更・実ECU試験の実施を意味しない** |
 
-| 文書 | 文書ID | 責務と位置付け |
+このフォルダが**RomLogger製品全体の設計文書正本**。車載側`RomRaider_agent`リポジトリからはリンクで参照し、別の製品設計正本を作らない。
+
+## 1. 読む順番
+
+| 順序 | 文書 | 役割 |
 | --- | --- | --- |
-| [システム要件定義](system_requirements.md) | RLG-SRS | **承認済み v1.0.0**。製品が何を満たすかの正本 |
-| [システム基本設計](basic_design.md) | RLG-BD | 主要構成、責務、処理、開発順序 |
-| [論理データ設計](logical_data_model.md) | RLG-LDM | 車両・端末・走行・サンプル・タスク・解析の論理関係 |
-| [Server–Agent IF 概要](interfaces/server_agent.md) | RLG-IF-SA | IF-001〜007の責務・接続面と背景 |
-| [Server–Agent 通信契約v1](interfaces/server_agent_wire_v1.md) | RLG-IF-SA-WIRE | **具体的なAPI形式・ACK・ID・エラーの製品v1設計** |\n| [Agent API OpenAPI 3.1](interfaces/agent_api_v1.openapi.json) | RLG-IF-SA-WIRE（機械可読） | Server側のモック・検証・実装向けAPIスキーマ |
-| [MCPインターフェース](interfaces/mcp.md) | RLG-IF-MCP | ツール一覧、行列指定検索、認証、計画操作 |
-| [安全・技術検証計画](safety_validation.md) | RLG-SAFETY-VAL | 実車操作のガード、復旧、段階的なVAL試験 |
-| [要件トレーサビリティ](requirements_traceability.md) | RLG-TRACE | SRS全119件の設計先・検証観点への対応 |
+| 1 | [RLG-SRS 要件定義](system_requirements.md) | 何を／なぜ／どこまで実現するか（承認済み） |
+| 2 | [RLG-BD システム基本設計](basic_design.md) | 構成・責務・処理フロー・開発順 |
+| 3 | [RLG-ADR 設計判断台帳](design_decisions.md) | 合意済み／委任判断／技術検証待ちの明確化 |
+| 4 | [RLG-LDM 論理データ設計](logical_data_model.md) | 車両・走行・Run・Segment・Task・原本の関連 |
+| 5 | [RLG-IF-SA Server–Agent IF概要](interfaces/server_agent.md) | IF-001〜007の責務 |
+| 6 | [RLG-IF-SA-WIRE 通信契約v1](interfaces/server_agent_wire_v1.md) | **HTTPS/JSON、UUID、バッチ原子的ACK、端末認証・再送・操作** |
+| 7 | [Agent API v1 OpenAPI 3.1](interfaces/agent_api_v1.openapi.json) | 通信契約の機械可読なAPI・スキーマ |
+| 8 | [RLG-IF-MCP MCPインターフェース](interfaces/mcp.md) | AIからのツールと生データへのアクセス |
+| 9 | [MCP Query v1 JSON Schema](interfaces/telemetry_query_v1.schema.json) | 行・列・条件検索の入力／出力の機械可読な定義 |
 
-## 状態を誤認しないために
+## 2. 詳細設計・品質資料
 
-- RLG-SRS v1.0.0はユーザー承認済みの**要件定義**。その他は**製品向け設計文書**であって実装済みや実機検証済みを意味しない。
-- 製品の通信設計v1は、旧PoCの[RomRaider_agent/docs/10_interfaces.md](https://github.com/zawa356/RomRaider_agent/blob/main/docs/10_interfaces.md)とは**独立した世代**。PoCと混在接続できると仮定しない。
-- [RomRaiderServer/docs/control_protocol_poc.md](control_protocol_poc.md)、[docs/requirements.md](requirements.md)は旧PoCの実装経緯。製品版SRSに優先しない。
-- Serverの正本をAgentリポジトリに複製せず、Agent側の設計やREADMEからリンクする。Agent固有の内部実装資料はAgentリポジトリで保持する。
-- 未決・技術検証依存は基本設計末尾、安全検証計画および通信契約の留保事項で管理。設計方針の承認で実車安全制限を解除しない。
+| 文書 | 内容 |
+| --- | --- |
+| [DD-SRV Server詳細設計](server_detailed_design.md) | Python/FastAPI候補、レイヤー、原子的受信、タスク／操作、監視・検索 |
+| [DD-DB PostgreSQL物理設計](database_detailed_design.md) | JSONB原本＋検索用値、キー・制約、取り込み順・cursor整合、DDL参考 |
+| [DD-AGENT Windows車載詳細設計](agent_detailed_design.md) | RRBridge再利用、SQLite spool候補、Uploader、Supervisor・安全ゲート |
+| [DD-MCP MCP・AI解析詳細設計](mcp_detailed_design.md) | OAuth設計、ツール検索意味論、Plan・監視DSL・解析履歴 |
+| [DD-OPS 配備・運用詳細設計](operations_detailed_design.md) | Docker/Windows構成、初期設定、診断、更新、ライセンス |
+| [DD-TEST 契約・実機・受入テスト計画](test_acceptance_plan.md) | 段階受入・合成/実ECU/Live区分・リリース阻止条件 |
+| [RLG-SAFETY-VAL 車載安全・検証方針](safety_validation.md) | 段階的な実車安全ゲート、復帰、既存PoCの安全制限維持 |
+| [RLG-TRACE 要件ID対応](requirements_traceability.md) | **FR 101件、NFR 12件、VAL 6件、計119件**の設計対応・検証観点 |
 
-## 設計の優先順位
+## 3. 仕様間の優先順位と齟齬時の対処
 
-1. 製品要件の正本：RLG-SRS。
-2. 主要アーキテクチャと責務：RLG-BD／RLG-LDM。
-3. サーバーと車載の接続に関する具体契約：RLG-IF-SA-WIRE（同じ領域で概要書と異なる場合、具体仕様を優先）。
-4. ChatGPT等とServerの接続：RLG-IF-MCP。
-5. 安全上の実行判断：RLG-SAFETY-VAL（実機検証が終わるまで保守的に適用）。
-6. 実装段階の詳細設計・コード：上記規約に従う。変更時は関連文書・テストを同時更新する。
+1. 要件定義：RLG-SRSを最優先。**要件自体を設計の都合で変更しない**。
+2. 構成・責務：RLG-BD、論理データ：RLG-LDM。
+3. 通信形式と保存保証：**RLG-IF-SA-WIRE と対応OpenAPI**。IF-SA概要はその意図の説明。
+4. AI／MCP契約：RLG-IF-MCPと詳細設計、Query JSON Schema。
+5. 車載の最終安全：RLG-SAFETY-VALとAgent詳細設計。**車載実機で未証明の許可条件は適用しない**。
+6. 実装言語、クラス／テーブル物理名、設定閾値などは詳細設計の基準。実装試験により改訂可能だが外部契約・要件の意味を損なわない。
 
-## 開発順序（BD-008）
+**矛盾発見時は、暗黙に都合のよい仕様を選ばず、どの文書が正本かを判定し、関連文書とテストをまとめて改訂**する。AIが文書の更新を代行する場合も、設計と検証実績を混同しない。
 
-1. 文書・接続規約と検証条件の整備
-2. Server受信・PostgreSQL原本保存・保存確定ACK（合成データ）
-3. RRBridge／spool／転送（既存Java Agent再利用を優先）
-4. 実ECU → RomRaider → RRBridge → Server実測データの確認
-5. MCP読み取り系・ChatGPT接続確認
-6. Supervisor・承認・AI計画・安全なプロファイル管理
-7. 高度監視・解析履歴・未解決事項の継続管理
+## 4. PoCと製品版の関係
 
-## 変更時の最低限のチェック
+- [RomRaider_agent/docs/10_interfaces.md](https://github.com/zawa356/RomRaider_agent/blob/main/docs/10_interfaces.md)は**動作中のPoCの接続規約**。製品向けServer–Agent v1とは別世代で自動互換はない。
+- [Server側PoC制御規約](control_protocol_poc.md)と[旧PoC要件](requirements.md)も現行PoCの検証資料。製品SRSには優先しない。
+- 既存RRBridge Java Agentは**再利用第一候補**。コード・API・PoCの暫定閾値を盲目的に製品へ取り込まない。
+- 製品版コードの実装開始時には**設計契約v1で動く新Server**と、旧PoCが混在しないよう版・接続先・配布物を区別する。
+- PoCに存在する車載の停車ガード・無害なコマンド許可リストを、製品設計文書が完成した理由だけで解除しない。
 
-- SRSの個別要件に対応する設計章があるか。
-- ID・版・データ定義・時刻・ACK・再送・重複の契約がServer/Agentで一致するか。
-- 実車の未検証操作を「実証済み」と書いていないか。
-- 本番MCPが実車情報や車載操作を匿名公開しないか。
-- 合成データと実ECUデータを混同していないか。
-- **アプリコード変更なしの設計更新であること**をGit差分で確認する。
+## 5. 設計完成と未検証の区別
+
+**設計ベースライン v1.0 完成**は、主要な設計判断・IF契約・DB原本・車載保全・MCP検索・運用・試験の仕様がドキュメントで揃ったことを意味する。以下は設計作業の外部にある検証条件として引き続き管理する。
+
+- Java Agentが実ECUサンプルをRomRaider内部から継続取得できるか。
+- 独立した走行安全入力と、走行中のプロファイル切替の負荷・安全性。
+- ChatGPT通常／Liveで利用できる**実際の**認証・ツール発見・書込み機能。
+- Windows spoolの電源断耐性、実測取得周波数／転送遅延・検索性能。
+- RomRaider等のライセンス、公開・再配布条件。
+
+これらは[設計判断台帳](design_decisions.md)のTV-01〜10として記録。実装工程での検証まで「未確認」と表記する。
+
+## 6. 開発順序
+
+**設計文書整備 → Server受信・PostgreSQL → RRBridge／車載spool → 実ECU全経路 → MCP参照 → Supervisor・安全なAI計画 → 継続監視・解析履歴 → 条件付き走行中切替の実機検証**。
+
+各段階の受入条件は[DD-TEST](test_acceptance_plan.md)を正本とする。ServerとAgentを独立更新する場合は両者の通信v1契約に従う。
+
+## 7. 更新履歴
+
+| 日付 | 内容 |
+| --- | --- |
+| 2026-10-12 | 基本設計・IF・データ・安全・要件追跡の初稿を作成 |
+| 2026-10-12 | 委任された技術判断によりServer・DB・Agent・MCP・運用・テスト詳細設計を追加し、設計ベースラインv1.0に整理 |

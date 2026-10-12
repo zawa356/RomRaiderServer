@@ -4,8 +4,8 @@
 | --- | --- |
 | 文書ID | RLG-IF-SA-WIRE |
 | 仕様版 | **protocol v1**（本書の設計選択。現行PoCとの互換性なし） |
-| 文書版 | 0.2.0 / 2026-10-12 |
-| 状態 | **設計案・実装／実機検証前**。ユーザーから文書の技術判断を委任されている |
+| 文書版 | 1.0.0 / 2026-10-12 |
+| 状態 | **通信仕様v1の設計ベースライン。実装／実機検証前** |
 | 親文書 | [外部IF設計](server_agent.md) / [論理データ設計](../logical_data_model.md) / [要件定義](../system_requirements.md) |\n| 機械可読API定義 | [OpenAPI 3.1 JSON](agent_api_v1.openapi.json) |
 
 本書の「必須」「MUST」は**製品版を実装するときの契約**を表す。対応するJSONリクエスト・レスポンス構造の機械可読な定義は[OpenAPI v1](agent_api_v1.openapi.json)を参照する。意味上の保証（ACK・再送・順序・安全）は本書を正本とする。現行PoCに実装済みであることを意味しない。実装中に変更した場合は契約版と試験を更新する。
@@ -130,7 +130,7 @@ IDは仕様上UUID文字列であり、その具体的生成ライブラリは�
 | records | array | ○ | 1件以上の観測／イベントレコード |
 | record.kind | enum | ○ | `observation`, `event`, `gap` |
 | record.record_id | UUID | ○ | 変化しない原本ID |
-| record.segment_id | UUID | ○ | 計測区間識別 |
+| record.segment_id | UUID／null | 観測のみ必須 | 観測区間識別。event/gapは最初のsegment開始前等では未指定可 |
 | record.captured_at | RFC3339 | ○ | 車載観測／発生時刻 |
 | record.source_kind | enum | ○ | 観測: `ecu`／`synthetic`。イベント・gap: `agent`／`ecu`／`synthetic` |
 | record.sequence | integer | 観測のみ | run内の取得順、非負 |
@@ -141,7 +141,7 @@ IDは仕様上UUID文字列であり、その具体的生成ライブラリは�
 
 観測の `values[].value` は**有限のJSON number**。null／NaN／Infinityや文字列の数値変換を許さない。該当値が未取得ならその値要素を含めず、必要に応じ品質イベントで理由を表現する。0や直近値で補完しない。値の集合が空の観測は保存できず422。記録した順と適用セグメントの整合は検証する。
 
-バッチは1つのrunに属する。複数runのレコードは別バッチへ分ける。record_idは**イベント・gapにも必須**とし、それらも冪等化する。Serverはrunが未登録の場合、認証済みdevice/vehicleと初回サンプルに基づきrunの論理記録を作成可能。走行セッションの境界は別の推定処理で管理する。
+バッチは1つのrunに属する。**segment開始前に発行されたevent/gapはsegment_id無しでも登録可能**とし、存在しない区間へ偽のIDを作って関連付けない。複数runのレコードは別バッチへ分ける。record_idは**イベント・gapにも必須**とし、それらも冪等化する。Serverはrunが未登録の場合、認証済みdevice/vehicleと初回サンプルに基づきrunの論理記録を作成可能。走行セッションの境界は別の推定処理で管理する。
 
 説明用リクエスト:
 
@@ -294,4 +294,4 @@ HTTP契約の基本的意味論とURIをv1設計選択として置いたが、**
 
 | 日付 | 版 | 内容 |
 | --- | --- | --- |
-| 2026-10-12 | 0.2.0 | 委任を受け、通信の初版設計選択を具体化。HTTP/JSON、原子的バッチACK、UUID、定義先行同期、初版トークン認証、誤ACK防止と結合試験を明文化 |
+| 2026-10-12 | 0.2.0 | 委任を受け、通信の初版設計選択を具体化。HTTP/JSON、原子的バッチACK、UUID、定義先行同期、初版トークン認証、誤ACK防止と結合試験を明文化 |\n| 2026-10-12 | 1.0.0 | OpenAPIおよび詳細設計との整合を確認し設計ベースライン化。機能実装は別工程 |

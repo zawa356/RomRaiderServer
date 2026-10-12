@@ -3,8 +3,8 @@
 | 項目 | 内容 |
 | --- | --- |
 | 文書ID | RLG-IF-SA |
-| 版 | 0.2.0 / 2026-10-12 |
-| 状態 | 製品向け論理IF概要（詳細ワイヤ契約は別文書） |
+| 版 | 1.0.0 / 2026-10-12 |
+| 状態 | 製品向け論理IF概要の設計ベースライン（ワイヤ契約は別文書） |
 | 上位 | [要件定義](../system_requirements.md)、[基本設計](../basic_design.md) |
 | 具体仕様の正本 | **[Server–Agent通信契約v1](server_agent_wire_v1.md)** / [OpenAPI 3.1](agent_api_v1.openapi.json) |
 | PoC | [RomRaider_agent/docs/10_interfaces.md](https://github.com/zawa356/RomRaider_agent/blob/main/docs/10_interfaces.md)（別世代） |
@@ -114,4 +114,4 @@ Serverの最小受信基盤を先行構築し、合成データで受信・ACK�
 | 日付 | 版 | 内容 |
 | --- | --- | --- |
 | 2026-10-12 | 0.1.0 | IF-001〜007の初稿 |
-| 2026-10-12 | 0.2.0 | 文書重複を解消し具体仕様をWire v1へ一本化 |
+| 2026-10-12 | 0.2.0 | 文書重複を解消し具体仕様をWire v1へ一本化 |\n| 2026-10-12 | 1.0.0 | Server／Agent詳細設計と整合、製品v1設計資料として基準化 |
