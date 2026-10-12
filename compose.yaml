@@ -30,6 +30,7 @@ services:
     restart: unless-stopped
   proxy:
     image: caddy:2-alpine
+    env_file: .env
     ports:
       - "127.0.0.1:8080:80"
     volumes:
