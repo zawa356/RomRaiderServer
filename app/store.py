@@ -171,3 +171,61 @@ def voice_request_status(request_id):
             "result_ok":result.get("ok") if row["command_status"]=="completed" else None,
             "real_rrbridge":result.get("real_rrbridge",False)
               if row["command_status"]=="completed" else False}
+
+
+def latest_selftest():
+    """Return the latest *proven* RRBridge synthetic selftest sample.
+
+    Fail closed: a TEST_* key alone is insufficient. Require exactly the
+    expected three IDs, known metadata from Stream.selftest(), and a matching
+    'selftest start' event in the same session and segment. No real ECU fields
+    or general telemetry can leave through the unauthenticated voice-demo.
+    """
+    with connect() as db:
+        row = db.execute("""
+            SELECT s.session, s.segment, s.seq, s.timestamp_ms, s.values_json
+            FROM samples AS s
+            WHERE s.values_json ?& ARRAY['TEST_RPM','TEST_TPS','TEST_MRP']::text[]
+              AND (s.values_json - 'TEST_RPM' - 'TEST_TPS' - 'TEST_MRP') = '{}'::jsonb
+              AND EXISTS (
+                SELECT 1 FROM parameters AS p
+                WHERE p.session=s.session AND p.segment=s.segment
+                  AND p.param_id='TEST_RPM'
+                  AND p.name='Selftest Engine Speed' AND p.units='rpm')
+              AND EXISTS (
+                SELECT 1 FROM parameters AS p
+                WHERE p.session=s.session AND p.segment=s.segment
+                  AND p.param_id='TEST_TPS'
+                  AND p.name='Selftest Throttle' AND p.units='%')
+              AND EXISTS (
+                SELECT 1 FROM parameters AS p
+                WHERE p.session=s.session AND p.segment=s.segment
+                  AND p.param_id='TEST_MRP'
+                  AND p.name='Selftest Manifold Rel Pressure' AND p.units='kPa')
+              AND EXISTS (
+                SELECT 1 FROM events AS e
+                WHERE e.session=s.session AND e.segment=s.segment
+                  AND e.message LIKE 'selftest start count=% hz=%')
+            ORDER BY s.received_at DESC, s.seq DESC LIMIT 1
+        """).fetchone()
+    if not row:
+        return {
+            "available": False,
+            "synthetic": True,
+            "live": False,
+            "message": "No verified RRBridge synthetic selftest sample found.",
+        }
+    values = row["values_json"]
+    return {
+        "available": True,
+        "synthetic": True,
+        "live": False,
+        "session": row["session"],
+        "segment": row["segment"],
+        "seq": row["seq"],
+        "timestamp_ms": row["timestamp_ms"],
+        "engine_rpm": float(values["TEST_RPM"]),
+        "throttle_percent": float(values["TEST_TPS"]),
+        "manifold_relative_pressure_kpa": float(values["TEST_MRP"]),
+        "message": "RRBridge selftest synthetic data; not a live ECU reading.",
+    }
