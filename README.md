@@ -1,6 +1,6 @@
 # RomRaiderServer — Docker PoC
 
-> **製品全体の要件定義（正本）**: [RomLogger システム要件定義書 v0.1.0](docs/system_requirements.md)。本READMEおよび [PoC要件](docs/requirements.md) は現行PoCの説明です。走行中の計測制御や認証に関する製品目標・未検証事項は正本を参照してください。文書の追加は実装・安全制限の変更を意味しません。
+> **製品全体の要件定義（正本）**: [RomLogger システム要件定義書 v1.0.0（承認済み）](docs/system_requirements.md)。本READMEおよび [PoC要件](docs/requirements.md) は現行PoCの説明です。走行中の計測制御や認証に関する製品目標・未検証事項は正本を参照してください。文書の追加は実装・安全制限の変更を意味しません。
 
 Small, isolated proof of concept for **ChatGPT Live → Remote MCP → command queue → simulated X270**, and **RRBridge TSV → Ingest API → PostgreSQL → MCP**.
 
