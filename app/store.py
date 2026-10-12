@@ -30,6 +30,13 @@ def init():
             completed_at timestamptz)""")
 
         db.execute("ALTER TABLE commands ADD COLUMN IF NOT EXISTS target_mode text NOT NULL DEFAULT 'mock'")
+        db.execute("""CREATE TABLE IF NOT EXISTS voice_requests (
+            id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            command text NOT NULL, profile text NOT NULL,
+            state text NOT NULL DEFAULT 'proposed',
+            created_at timestamptz NOT NULL DEFAULT now(),
+            expires_at timestamptz NOT NULL DEFAULT (now() + interval '2 minutes'),
+            command_id bigint)""")
 
 def ingest(body):
     inserted = duplicates = 0
@@ -114,3 +121,34 @@ def command_status(command_id):
     with connect() as db:
         row=db.execute("SELECT id,command,profile,target_mode,status,result FROM commands WHERE id=%s",(command_id,)).fetchone()
     return dict(row) if row else None
+
+def propose_voice(profile):
+    """Unauthenticated demo: store a short-lived proposal, NEVER an executable command."""
+    if profile not in PROFILES:
+        raise ValueError("only basic.xml or fuel.xml are allowed")
+    with connect() as db:
+        # Global database-backed quota for this deliberately no-auth demo route.
+        quota = db.execute("""SELECT count(*) AS n FROM voice_requests
+                              WHERE created_at > now() - interval '1 hour'""").fetchone()["n"]
+        if quota >= 5:
+            return {"accepted": False, "error": "demo proposal quota reached; try later"}
+        row = db.execute("""INSERT INTO voice_requests(command,profile)
+                            VALUES ('switch_profile',%s)
+                            RETURNING id,expires_at""", (profile,)).fetchone()
+    return {"accepted": True, "request_id": row["id"], "state": "proposed",
+            "profile": profile, "executed": False,
+            "message": "A proposal only. Local operator approval and X270 checks are required."}
+
+def voice_request_status(request_id):
+    with connect() as db:
+        row=db.execute("""SELECT id,state,profile,command_id,expires_at
+                          FROM voice_requests WHERE id=%s""", (request_id,)).fetchone()
+    if not row:
+        return {"found": False}
+    from datetime import datetime, timezone
+    state = row["state"]
+    if state == "proposed" and datetime.now(timezone.utc) >= row["expires_at"]:
+        state = "expired"
+    return {"found": True, "request_id":row["id"],"state":state,
+            "profile":row["profile"],"command_id":row["command_id"],
+            "executed":False if state in ("proposed","expired") else None}
