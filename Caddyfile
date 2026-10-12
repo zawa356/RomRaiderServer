@@ -1,6 +1,10 @@
 :80 {
     handle /mcp* {
-        reverse_proxy mcp:8001
+        @authorized header Authorization "Bearer {$MCP_TOKEN}"
+        route {
+            reverse_proxy @authorized mcp:8001
+            respond "Unauthorized" 401
+        }
     }
     handle {
         reverse_proxy api:8000
