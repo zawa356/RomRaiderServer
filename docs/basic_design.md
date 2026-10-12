@@ -3,16 +3,16 @@
 | 項目 | 内容 |
 | --- | --- |
 | 文書ID | RLG-BD |
-| 版 | 0.1.0 |
+| 版 | 0.2.0 |
 | 作成日 | 2026-10-12 |
-| 状態 | **初稿・レビュー中（文書未承認、実装未着手）** |
+| 状態 | **基本設計・通信規約の統合ドラフト（実装／実車検証前）** |
 | 要件の正本 | [システム要件定義書 v1.0.0](system_requirements.md) |
 | 適用対象 | RomLogger Server／車載クライアント／MCP経由のAI連携 |
 | 変更対象 | 本書は設計文書。既存PoCの実装・安全ガードは変更しない |
 
 ## 1. 目的、範囲、優先順位
 
-本書は、要件定義書 RLG-SRS v1.0.0 に対する製品の**論理アーキテクチャ、責務分界、主要処理、データ保全、安全制御、配備、開発順序**を定める。別文書の [Server–Agent外部インターフェース設計書](interfaces/server_agent.md) と [論理データ設計書](logical_data_model.md) が本書を補完する。
+本書は、要件定義書 RLG-SRS v1.0.0 に対する製品の**論理アーキテクチャ、責務分界、主要処理、データ保全、安全制御、配備、開発順序**を定める。別文書の [Server–Agent外部インターフェース概要](interfaces/server_agent.md)、**[具体通信契約v1](interfaces/server_agent_wire_v1.md)**、[MCPインターフェース設計](interfaces/mcp.md)、[論理データ設計書](logical_data_model.md)、[安全・検証計画](safety_validation.md) が本書を補完する。
 
 判断の優先順位は、承認済みSRS → 承認された基本設計 → 外部IF契約 → 詳細設計・実装とする。基本設計内に残る技術未検証事項は承認済み要件の達成宣言ではない。
 
@@ -110,7 +110,7 @@ flowchart TB
 - 取得周期は実測間隔に基づいて評価する。普遍的な固定Hz／固定項目数は保証しない。
 - 合成試験サンプルと実ECUサンプルは常に識別可能にする。
 
-**保全対象:** RomRaiderからアプリケーションが取得できた全サンプル。未取得のECU値の復元や電源断時の絶対無損失までは対象外。個々のバッチの原子性、シリアライズ形式、サイズ、時刻補正はインターフェース仕様でレビューする。
+**保全対象:** RomRaiderからアプリケーションが取得できた全サンプル。未取得のECU値の復元や電源断時の絶対無損失までは対象外。初版のワイヤ仕様はHTTPS/JSON、UUID識別、**バッチ全件の原子的保存とACK**を採用する。詳細な契約は[Server–Agent通信契約v1](interfaces/server_agent_wire_v1.md)を参照する。実ECUによる性能・保全の検証結果で改訂可能とする。
 
 ## 6. AI計測タスク・計画・プロファイル（BD-004）
 
@@ -166,9 +166,9 @@ MCP認証の具体方式はChatGPT通常チャット／Liveの実対応を検証
 | --- | --- | --- |
 | 要件定義 RLG-SRS | docs/system_requirements.md | 何を満たすか。承認済 v1.0.0 |
 | 本書 RLG-BD | docs/basic_design.md | どう分担・構成するか。本初稿 |
-| 外部IF設計 RLG-IF-SA | docs/interfaces/server_agent.md | Agent–Server間の独立実装用契約。初稿 |
-| 論理データ設計 RLG-LDM | docs/logical_data_model.md | 保存・検索単位、エンティティ関連 |
-| MCPインターフェース | docs/interfaces/（後続） | MCPツール契約と権限制御 |
+| 外部IF概要 RLG-IF-SA | docs/interfaces/server_agent.md | Agent–Server間の意味論・境界 |
+| 外部通信契約v1 RLG-IF-SA-WIRE | docs/interfaces/server_agent_wire_v1.md | HTTP/JSON・認証・ID・原子的ACK・エラーの具体仕様 |\n| 論理データ設計 RLG-LDM | docs/logical_data_model.md | 保存・検索単位、エンティティ関連 |
+| MCPインターフェース RLG-IF-MCP | docs/interfaces/mcp.md | ツール契約と列・行・複合検索、権限 |\n| 車載安全・検証 RLG-SAFETY-VAL | docs/safety_validation.md | ローカル安全ゲート、フォールバック、実機検証条件 |\n| 要件対応 RLG-TRACE | docs/requirements_traceability.md | SRS全IDと設計・検証観点の対応 |
 | PoC接続規約 | RomRaider_agent/docs/10_interfaces.md | **現行PoC専用**の実装上の正本。製品IFと混同しない |
 
 Server側の文書を製品全体の正本とし、Agent側はリンクで参照。実装の分岐時にはPoC規約と新製品規約の適用範囲を明示する。
@@ -191,7 +191,7 @@ Server側の文書を製品全体の正本とし、Agent側はリンクで参照
 | --- | --- | --- |
 | FR-OPS-001〜007 | §3、§6 | 起動・停止の具体IF |
 | FR-CAP-001〜007 | §6 | Logger定義／実ECU対応検証 |
-| FR-PLAN-001〜012 | §6、§8 | 計画／承認契約、Live再呼び出しの制約 |
+| FR-PLAN-001〜012 | §6、§8、MCP IF | 計画／承認契約、Live再呼び出しの制約 |
 | FR-SAFE-001〜013 | §6 | 走行中ガード、負荷、独立入力の安全検証 |
 | FR-DATA-001〜010 | §4、§5 | 原本の同一性、スプール耐障害性、ACK |
 | FR-RES-001〜008 | §3、§5、§6、§8 | 再接続・再起動整合 |
@@ -213,7 +213,7 @@ Server側の文書を製品全体の正本とし、Agent側はリンクで参照
 | BD-OPEN-01 | 実ECUからのサンプル取得における既存Java Agentの安定性 | 車載実機検証 |
 | BD-OPEN-02 | 走行中の安全判定入力、通信負荷、許可条件 | 安全設計・停車→段階的検証 |
 | BD-OPEN-03 | プロファイル形式生成、Logger定義／ECU適合判定の具体方式 | Agent詳細設計・実機検証 |
-| BD-OPEN-04 | バッチ原子性、シリアライズ、ACK表現、ID、処理上限 | Server–Agent IF設計レビュー |
+| BD-OPEN-04 | JSON数値・メタデータ・原本ハッシュの正規化、容量限界の実測 | Server–Agent v1の実装・結合試験 |
 | BD-OPEN-05 | エンジンON/OFFの検知・不明境界の扱い | 論理データ／車載技術検証 |
 | BD-OPEN-06 | ChatGPT通常・LiveとMCPの認証方式の整合 | MCP IF設計・動作確認 |
 | BD-OPEN-07 | 監視条件の評価器、誤検知抑制、しきい値 | 詳細設計・実データによる評価 |
@@ -247,4 +247,4 @@ Server側の文書を製品全体の正本とし、Agent側はリンクで参照
 
 | 日付 | 版 | 変更 |
 | --- | --- | --- |
-| 2026-10-12 | 0.1.0 | BD-001〜008の会話合意を初稿として統合。未決／未検証事項を明示 |
+| 2026-10-12 | 0.1.0 | BD-001〜008の会話合意を初稿として統合。未決／未検証事項を明示 |\n| 2026-10-12 | 0.2.0 | Server–Agent通信v1・MCP IF・安全検証・要件追跡資料との整合を更新 |
