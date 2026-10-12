@@ -167,7 +167,9 @@ def handle_command(item, *, real, rr_url, rr_token, spool_dir, receipt_file):
     profile = item.get("profile") or ""
     validate_command(command, profile)
     if real and item.get("target_mode") != "real":
-        raise Refused("mock/test commands cannot be executed on real RRBridge")
+        return {"ok": False, "error": "mock/test command rejected by real Supervisor"}
+    if not real and item.get("target_mode", "mock") != "mock":
+        return {"ok": False, "error": "real command rejected by dry-run Supervisor"}
     # The receipt is written BEFORE any local side effect to avoid replay execution.
     receipts[key] = {"state": "started", "command": command, "profile": profile}
     write_json_atomic(receipt_file, receipts)
@@ -212,7 +214,7 @@ def main():
         if args.real:
             require_arm()  # Refuse to fetch after local operator approval expires.
         try:
-            item = http_json(server_url + "/agent/commands/next",
+            item = http_json(server_url + "/agent/commands/next?mode=" + ("real" if args.real else "mock"),
                              token=agent_token).get("command")
             if item:
                 result = handle_command(item, real=args.real, rr_url=rr_url,
