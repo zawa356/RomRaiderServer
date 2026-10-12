@@ -55,7 +55,7 @@
 | sequence | run内の取得イベント通番（0以上の非負整数）。同一run内で単調増加し、再起動で別runになる |
 | timestamp | ISO 8601 / RFC 3339 のUTC時刻文字列、ミリ秒以上の精度（例 `2026-10-12T10:00:01.234Z`） |
 
-IDは仕様上UUID文字列であり、その具体的生成ライブラリは問わない。イベントとサンプルの通番は区別できること。複数値のサンプルを「ECU内で同時刻測定した」とはみなさない。実ECU由来と合成試験由来は `source_kind` で区別する。車載時計とサーバー時計の差は計測品質として扱い、サーバー保存時刻で観測時刻を置き換えない。
+IDは仕様上UUID文字列であり、その具体的生成ライブラリは問わない。イベントとサンプルの通番は区別できること。複数値のサンプルを「ECU内で同時刻測定した」とはみなさない。実ECU由来と合成試験由来は `source_kind` で区別する。ローカルアプリが発行する状態・操作イベントには `agent` を使用できる（観測値そのものには使用しない）。車載時計とサーバー時計の差は計測品質として扱い、サーバー保存時刻で観測時刻を置き換えない。
 
 ### 2.3 共通応答エラー
 
@@ -132,7 +132,7 @@ IDは仕様上UUID文字列であり、その具体的生成ライブラリは�
 | record.record_id | UUID | ○ | 変化しない原本ID |
 | record.segment_id | UUID | ○ | 計測区間識別 |
 | record.captured_at | RFC3339 | ○ | 車載観測／発生時刻 |
-| record.source_kind | enum | ○ | `ecu` または `synthetic` |
+| record.source_kind | enum | ○ | 観測: `ecu`／`synthetic`。イベント・gap: `agent`／`ecu`／`synthetic` |
 | record.sequence | integer | 観測のみ | run内の取得順、非負 |
 | record.profile_revision_id | UUID | 観測のみ | 先行登録済み定義 |
 | record.values | array | 観測のみ | `parameter_id`、`value`を持つ要素、同一IDは重複不可 |
