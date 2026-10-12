@@ -1,4 +1,4 @@
-# Optional, isolated no-auth demo MCP. Never deploy with real vehicle data.
+# Optional no-auth PoC: synthetic readings and opt-in proposals; no direct operations.
 # Preserve local compose.yaml changes (e.g. host port 18767) using -f.
 services:
   voice-demo:
