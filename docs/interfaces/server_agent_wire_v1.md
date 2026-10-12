@@ -130,7 +130,7 @@ IDは仕様上UUID文字列であり、その具体的生成ライブラリは�
 | records | array | ○ | 1件以上の観測／イベントレコード |
 | record.kind | enum | ○ | `observation`, `event`, `gap` |
 | record.record_id | UUID | ○ | 変化しない原本ID |
-| record.segment_id | UUID | ○ | 計測区間識別 |
+| record.segment_id | UUID／null | 観測のみ必須 | 観測区間識別。event/gapは最初のsegment開始前等では未指定可 |
 | record.captured_at | RFC3339 | ○ | 車載観測／発生時刻 |
 | record.source_kind | enum | ○ | 観測: `ecu`／`synthetic`。イベント・gap: `agent`／`ecu`／`synthetic` |
 | record.sequence | integer | 観測のみ | run内の取得順、非負 |
@@ -141,7 +141,7 @@ IDは仕様上UUID文字列であり、その具体的生成ライブラリは�
 
 観測の `values[].value` は**有限のJSON number**。null／NaN／Infinityや文字列の数値変換を許さない。該当値が未取得ならその値要素を含めず、必要に応じ品質イベントで理由を表現する。0や直近値で補完しない。値の集合が空の観測は保存できず422。記録した順と適用セグメントの整合は検証する。
 
-バッチは1つのrunに属する。複数runのレコードは別バッチへ分ける。record_idは**イベント・gapにも必須**とし、それらも冪等化する。Serverはrunが未登録の場合、認証済みdevice/vehicleと初回サンプルに基づきrunの論理記録を作成可能。走行セッションの境界は別の推定処理で管理する。
+バッチは1つのrunに属する。**segment開始前に発行されたevent/gapはsegment_id無しでも登録可能**とし、存在しない区間へ偽のIDを作って関連付けない。複数runのレコードは別バッチへ分ける。record_idは**イベント・gapにも必須**とし、それらも冪等化する。Serverはrunが未登録の場合、認証済みdevice/vehicleと初回サンプルに基づきrunの論理記録を作成可能。走行セッションの境界は別の推定処理で管理する。
 
 説明用リクエスト:
 
