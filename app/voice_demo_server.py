@@ -1,7 +1,7 @@
-"""No-auth, read-only MCP for temporary ChatGPT Live validation.
+"""Unauthenticated temporary ChatGPT Live PoC.
 
-This process deliberately has NO command tools and exposes only synthetic test
-session poc_001, seq=1. Never use it for real ECU telemetry.
+May read strictly verified synthetic test telemetry, or record proposals.
+No direct vehicle operation or general real ECU telemetry is exposed.
 """
 import os
 from mcp.server.fastmcp import FastMCP
@@ -47,6 +47,18 @@ def get_demo_vehicle_status() -> dict:
         "coolant_temperature_c": float(row["coolant_c"]),
         "message": "Historical synthetic test data, not a current vehicle reading",
     }
+
+@mcp.tool()
+def get_latest_rrbridge_selftest() -> dict:
+    """Fetch the most recently received RRBridge SELFTEST sample from the X270.
+
+    Returns ONLY synthetic TEST_RPM, TEST_TPS and TEST_MRP, never actual ECU
+    telemetry. Verify it against matching metadata and a selftest start event.
+    'Latest' refers to the newest STORED selftest, not a live measurement.
+    """
+    store.init()
+    return store.latest_selftest()
+
 
 @mcp.tool()
 def propose_demo_profile_switch(profile: str) -> dict:
