@@ -29,13 +29,22 @@
 | 2.1-C2a | **pinした実Agent Java→実FastAPI→PostgreSQLの合成E2E** | **PASS（Agent commit 6dd46835固定／実ECU未確認）** | [E2E CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38346035656) |
 | 2.1-C2b | Agent最新main自動同期・継続E2E／既存RRBridge常駐統合 | 未着手（Agent側のPrivate token付きE2EはNOT RUN） | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 2.1-D1 | 旧TSV増分取込・SQLite永続offset・保存直後クラッシュ復旧 | **完了（Windows/Linux合成CI）** | [Agent PR #8](https://github.com/zawa356/RomRaider_agent/pull/8) |
-| 2.1-D2 | Agent新バージョンの実Server E2E再pin／欠損対策・常駐送受信 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
+| 2.1-D2a | 最新増分Agentの実Server E2E再pin／未完結行・再起動・重複再送 | **実装・CI検証中** | [Server PR #24](https://github.com/zawa356/RomRaiderServer/pull/24)／[Agent PR #9](https://github.com/zawa356/RomRaider_agent/pull/9) |
+| 2.1-D2b | データ欠損対策・安全な常駐送信／バックオフ | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-D2a：最新増分Agentを実Server E2Eへ再pin（CI検証中）
+
+- [Agent PR #9](https://github.com/zawa356/RomRaider_agent/pull/9)をmainへ統合。実Server E2Eに使用するJavaテストを旧TSV全量2観測から、新しい`IncrementalTsvBridge`の**定義1行ごとの取込・複数回再起動・未完結LF行・追記3観測**へ更新
+- Server [PR #24](https://github.com/zawa356/RomRaiderServer/pull/24)でAgent main **`668ad5230e7e3db4fc592311c857906f43802ad3`** のJavaソース・実E2Eスクリプトを7ファイルのGit blob SHA照合付きテスト専用スナップショットへ更新。原本SHAと各コピーSHAを実際に照合
+- CIで実FastAPIと使い捨てPostgreSQL 16へProfile登録→3観測のバッチ送信→全件ACK→**別SQLiteから同じ元TSVを2/2/1行で再取込して重複だけのACK**を検証。DB上の観測3件、Profile1件、`synthetic`属性を照合
+- **試験結果はCI完了後に記載する。** この段階はAgentとServerにまたがるCI専用ソースの更新。Agentの車載RuntimeやECU操作には触れない
+- 今回もPrivateリポジトリ間を自動追従しない。将来のAgentコード変更時はpin見直しが必要。本物のWindows X270 Zulu 8 32-bit・実ECU／K-Line・Logger callback／常駐スケジューラ・disk-full／電源断・古いQueue overflowの改善は未検証
 
 ### 2026-10-13 — Phase 2.1-D1：TSV増分読み込みとローカルSQLiteカーソル保全
 
