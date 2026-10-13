@@ -51,18 +51,17 @@ def register_profile(device: dict, payload: dict):
     signature = digest(payload)
     with connect() as db:
         db.execute("SELECT vehicle_id FROM v1_vehicles WHERE vehicle_id=%s FOR UPDATE", (vehicle,))
-        db.execute("""INSERT INTO v1_profile_revisions
+        inserted = db.execute("""INSERT INTO v1_profile_revisions
             (profile_revision_id,device_id,vehicle_id,payload,content_hash)
-            VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING""",
-            (ident,device["device_id"],vehicle,Jsonb(payload),signature))
+            VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING
+            RETURNING profile_revision_id""",
+            (ident,device["device_id"],vehicle,Jsonb(payload),signature)).fetchone()
         row = db.execute("""SELECT device_id,vehicle_id,content_hash
               FROM v1_profile_revisions WHERE profile_revision_id=%s""",(ident,)).fetchone()
         if (row["content_hash"] != signature or row["device_id"] != device["device_id"]
                 or row["vehicle_id"] != vehicle):
             raise DomainError(409, "PROFILE_REVISION_CONFLICT", "Profile ID has different content")
-        fresh = db.execute("SELECT created_at FROM v1_profile_revisions WHERE profile_revision_id=%s", (ident,)).fetchone()
-        # Returning the same idempotent result is sufficient; caller need not distinguish first registration.
-    return {"status": "registered", "profile_revision_id": ident}
+    return {"status": "registered" if inserted else "already_registered", "profile_revision_id": ident}
 
 
 def _ensure_run(db, device, run_id):
