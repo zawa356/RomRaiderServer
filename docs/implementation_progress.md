@@ -38,13 +38,24 @@
 | 2.1-D2b-2c-3 | writer未fsync待機行・障害状態の観測、queue飽和後の回復試験 | **Agent PR #17マージ・44チェック合成CI合格** | [Agent PR #17](https://github.com/zawa356/RomRaider_agent/pull/17) |
 | 2.1-D2b-2c-4a | 永続入口ジャーナル独立PoC（fsync/CRC/seq/quota/異常終了） | **Agent PR #18・Windows/Linux 34チェック合成CI PASS、製品接続なし** | [Agent PR #18](https://github.com/zawa356/RomRaider_agent/pull/18) |
 | 2.1-D2b-2c-4b-1 | 独立volatile handoff、専用worker故障保持、stable replay ID | **Agent PR #19・Linux/Windows合成75チェックPASS、実SQLite未接続** | [Agent PR #19](https://github.com/zawa356/RomRaider_agent/pull/19) |
-| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：4b-1も製品未接続PoC、無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-4b-2a | journal UUID sidecar＋独立実SQLite receipt／cursor原子的commit | **Agent PR #20・Linux/Windows実SQLite回帰PASS、製品v1変換未接続** | [Agent PR #20](https://github.com/zawa356/RomRaider_agent/pull/20) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：4b-2aも製品未接続PoC、電源断時の無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Agent Phase 2.1-D2b-2c-4b-2a：journal UUID・実SQLite受領原子カーソル
+
+- [Agent PR #20](https://github.com/zawa356/RomRaider_agent/pull/20) をmainへ統合（merge SHA `28f3cb33da038a57442e3234a9c311046a51879d`）。CloudPC `jr2twt`専用作業ツリーでコード編集・Java8互換コンパイル・試験・commit・push・PRを実施。
+- journalの固有source UUID/CRCを`.identity` sidecarへ保存。非空journalでID欠落・破損したとき再採番せずfail closed。実SQLiteの**PoC専用**`proto_ingress_rows`原文＋`proto_ingress_cursor`を同一DB transactionでcommit、原本SHA-256と連番を検証。
+- CloudPCで新規実SQLite**22チェックPASS**、既存journal＋handoff **75チェックPASS**、製品v1の実SQLite回帰PASS。commit直前例外のrollback、commit後別JVMのRuntime.haltと再起動確認、原本書換え拒否を検証。[Agent PR CI #38381013007](https://github.com/zawa356/RomRaider_agent/actions/runs/38381013007) のLinux/Windows両ジョブで全試験ステップPASS。
+- 初回試験はCRC破損fixtureが値を固定`0`にしたため失敗した。必ず異なる値へ変更する修正後、全試験PASS。履歴と[Agent詳細仕様](https://github.com/zawa356/RomRaider_agent/blob/main/docs/phase_2_1_d2b_2c_4b_2a_sqlite_receipts.md)に記録。
+- **未解決**：journal+sidecarの原子的な同一性、物理電源断時のディレクトリfsync、Windows32bit、製品`v1_records`へのTSV変換・E2E、取得callbackでの欠損ゼロ保証。**Serverのコード／DB／API、Caddy/MCP、X270、ECU、本番配備に変更なし。** 今回のDB commitは製品Server ACKではない。
+
+
 
 ### 2026-10-13 — Agent D2b-2c-4b-1：非ブロッキング受渡し／リプレイIDの契約PoC
 
