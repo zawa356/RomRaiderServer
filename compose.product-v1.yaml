@@ -1,6 +1,14 @@
-# Opt-in product v1 Server-only overlay. Does not replace legacy PoC routes.
-# Local loopback binding; do not expose this unfinished phase publicly.
+# Opt-in product v1 Server-only overlay. Existing PoC remains untouched.
+# Local loopback binding; no production exposure and no automatic rollout.
 services:
+  product-v1-migrate:
+    build: .
+    command: python -m product_v1.migrate upgrade
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
   api-v1:
     build: .
     command: uvicorn product_v1.api:app --host 0.0.0.0 --port 8003
@@ -8,6 +16,6 @@ services:
     ports:
       - "127.0.0.1:18083:8003"
     depends_on:
-      db:
-        condition: service_healthy
+      product-v1-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
