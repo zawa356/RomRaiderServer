@@ -82,7 +82,7 @@ def claim(device, body):
         db.execute("""
             UPDATE v1_command_requests c SET status='unknown',updated_at=now()
             WHERE c.device_id=%s AND c.status='leased' AND (
-                c.expires_at<=now() OR NOT EXISTS (
+                c.expires_at<=now() OR NOT (c.action=ANY(%s)) OR NOT EXISTS (
                     SELECT 1 FROM v1_tasks t
                     JOIN v1_plan_revisions p ON p.task_id=t.task_id
                     JOIN v1_approval_scopes a ON a.task_id=t.task_id
@@ -100,13 +100,14 @@ def claim(device, body):
                       )
                 )
             )
-        """,(device["device_id"],))
+        """,(device["device_id"],list(DELIVERABLE_ACTIONS)))
         outstanding = db.execute("""
             SELECT * FROM v1_command_requests WHERE device_id=%s
               AND status='leased' AND lease_until>now()
-              AND plan_revision_id=%s
+              AND plan_revision_id=%s AND action=ANY(%s)
             ORDER BY issued_at,command_id LIMIT 1 FOR UPDATE
-        """, (device["device_id"],body.get("current_plan_revision_id"))).fetchone()
+        """, (device["device_id"],body.get("current_plan_revision_id"),
+              list(DELIVERABLE_ACTIONS))).fetchone()
         if outstanding:
             # Re-claim returns the same ID, but the Agent must use its local
             # execution journal and MUST NOT interpret this as a new operation.
