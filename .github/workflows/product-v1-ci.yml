@@ -78,7 +78,7 @@ jobs:
         run: |
           # Disposable CI-only configuration; never use actual vehicle credentials.
           cat > .env <<'EOF'
-          DATABASE_URL=postgresql://romlogger:ci_only_disposable_password@db:5432/romlogger_ci
+          DATABASE_URL=postgresql://romlogger:ci_only_disposable_password@db:5432/romlogger
           POSTGRES_PASSWORD=ci_only_disposable_password
           INGEST_TOKEN=ci_only_legacy_ingest
           AGENT_TOKEN=ci_only_legacy_agent
