@@ -34,6 +34,13 @@
 
 ## 変更履歴
 
+### 2026-10-13 — Phase 2.1-C1 main CIのWindows Maven403回復
+
+- **失敗履歴**：[Agent main CI #38339774312](https://github.com/zawa356/RomRaider_agent/actions/runs/38339774312)で、Windows runnerがビルド用SQLite JDBC JARをMaven Centralから取得中にHTTP403。テスト開始前に終了。LinuxはPASS
+- [Agent修正PR #6](https://github.com/zawa356/RomRaider_agent/pull/6)：公式Maven Centralの2エンドポイントをretry・timeout付きで使用し、破損JARを検査してから配備、GitHub Actionsに依存JARキャッシュを追加
+- [修正PR CI](https://github.com/zawa356/RomRaider_agent/actions/runs/38340311640)：Windows/Linuxともに**Spool42＋HTTP41＋TSV16＝99件PASS**
+- 実Server E2EはPrivateリポジトリ間の読取認証未設定で引き続き**NOT RUN**。元のmain CIの失敗と対処を過去履歴から消さない
+
 ### 2026-10-13 — Phase 2.1-C1：旧RRBridge TSV→製品v1 SQLiteの非破壊取込
 
 - [Agent PR #5](https://github.com/zawa356/RomRaider_agent/pull/5)で、旧RRBridgeのM/S/E TSVを読んで不変ProfileRevision、Observation、Eventの製品v1 JSONを生成する`LegacyTsvBridge`と、一度だけ取り込んでHTTP交換する明示実行用`ProductBridgeOnce`を追加
