@@ -35,13 +35,24 @@
 | 2.1-D2b-2b | 最新／過去runの3:1公平配送（ACK永続台帳） | **Agent PR #13マージ済み・合成CI合格** | [Agent PR #13](https://github.com/zawa356/RomRaider_agent/pull/13) |
 | 2.1-D2b-2c-1 | S行優先制限によりM/E行へqueue 4096枠を予約 | **Agent PR #15・合成CI合格** | [Agent PR #15](https://github.com/zawa356/RomRaider_agent/pull/15) |
 | 2.1-D2b-2c-2 | 旧TSV writerの64KiB分割書込・IOException/RuntimeException後のrollback | **Agent PR #16・合成CI合格** | [Agent PR #16](https://github.com/zawa356/RomRaider_agent/pull/16) |
-| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：2c-1/2c-2は限定的な欠損軽減のみ** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-3 | writer未fsync待機行・障害状態の観測、queue飽和後の回復試験 | **Agent PR #17マージ・44チェック合成CI合格** | [Agent PR #17](https://github.com/zawa356/RomRaider_agent/pull/17) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：2c-1〜2c-3は限定的な欠損軽減・可視化のみ** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Agent Phase 2.1-D2b-2c-3：書込障害・volatile backlog可視化と飽和復旧試験
+
+- [Agent PR #17](https://github.com/zawa356/RomRaider_agent/pull/17)／Agent main `95e44e7cc0204c63577d7add609a0f7095d7c67e` へ統合。旧PoC`Stream.java`に`writerPendingLines`・`memoryBufferedLines`・`spoolWriteFailures`・`writerDegraded`・writer最終fsync/障害時刻を追加。PoCの接続規約`docs/10_interfaces.md`C4.1を更新。
+- CloudPC上のJava8互換スタブ44項目PASS。writerの疑似I/O不能時に約19.6万サンプルをqueueへ投入、追加10サンプルdropとM/Eメタデータ保持、復旧後の**受け付け済み全195904行の一度限りの保存**・欠損イベント1件の書込を確認。試験は本物のホスト全体をdisk-fullにしていない。
+- [Agent PR CI #38372232369](https://github.com/zawa356/RomRaider_agent/actions/runs/38372232369) Ubuntu/Windowsの実試験ジョブが成功。失敗した初回ローカル試験は既存fsync時刻をnullと誤認したテスト期待値の問題で、修正・再実行済み。
+- **意味の制限**：監視カウンターは揮発性。writerが無期限停止し、callbackをブロックせず有限queueしか使えなければ無欠損保証は不可能。JVMクラッシュ前の未fsync行は引き続き失われ得る。最新製品Agentによる実PostgreSQL E2E、X270/実ECU、電源断・長期disk-full試験、本番配備は未実施。
+- Server製品コード・DB・IFは変更なし。旧PoCメタデータの追加は製品v1 API契約への変更ではない。
+
+
 
 ### 2026-10-13 — Phase 2.1-D2b-2c-1/2：旧PoC queue保護とwriter負荷・障害試験（Agent main同期）
 
