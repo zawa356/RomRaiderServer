@@ -229,6 +229,14 @@ def reconcile(device, body):
             raise store.DomainError(409, "CLIENT_STATE_REVISION_CONFLICT",
                                     "Same client revision has different content")
         if not prior:
+            latest = db.execute("""
+                SELECT reported_at FROM v1_reconciliations
+                WHERE device_id=%s ORDER BY reconcile_id DESC LIMIT 1
+            """,(device["device_id"],)).fetchone()
+            observed = datetime.fromisoformat(body["reported_at"].replace("Z","+00:00"))
+            if latest and observed < latest["reported_at"]:
+                raise store.DomainError(409, "STALE_CLIENT_STATE",
+                                        "Client state report predates the latest reconciliation")
             db.execute("""
                 INSERT INTO v1_reconciliations
                  (device_id,vehicle_id,client_state_revision,reported_at,content_hash,payload)
