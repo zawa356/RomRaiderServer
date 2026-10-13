@@ -50,7 +50,7 @@
 
 - **行:** 1ObservationEvent＝1行。行選択はvehicle（必須）、drive_session、run、segment、task実行期間、時刻区間、実ECU／合成、品質条件を組み合わせる。
 - **列:** parameter_idの配列＋許可されたメタデータ列。過去のProfileRevisionに同じparameter_idでも単位・意味が違う場合は版指定または明示換算を必要とする。
-- **値条件:** AND／ORで構成した小さなAST。比較演算子`eq/ne/lt/lte/gt/gte/between/in`と`is_missing`だけを許可する。
+- **値条件:** AND／ORで構成した小さなAST。比較演算子`eq/ne/lt/lte/gt/gte/between/in`と`is_missing/is_present`を許可する。
 - **欠測:** 存在しない列はNULL＋`missing_reason`。演算はSQLに似た**3値論理（true/false/unknown）**を基本とし、unknownはWHEREとして通過させない。`is_missing`だけが明示的に欠測を選べる。
 - **相関:** 同じ観測イベントにパラメーター値がない場合、**過去値を暗黙にforward fillして同時測定扱いにしない**。時間軸上の補間が必要なら別の明示分析サービスで原本へのリンクを残す。
 - **固定列の優先:** 複数プロファイルを跨ぐ検索で列が途中から存在しない場合、その列はnullを返す。値0の代用は禁止。
@@ -64,7 +64,23 @@
 
 WHERE内の`ne`もパラメーター未取得ではunknownであり、意図せず「P8 != 3000」をすべての欠測に一致させない。
 
-### 4.3 ページング・安定性
+### 4.3 レコードを起点とする前後ナビゲーション
+
+通常のページ継続用`next_cursor`とは独立し、既知の観測Aの`record_id`から「次に取得したB」「B以降100件」等を1ツール呼出しで取得する。入力は[検索Schema](interfaces/telemetry_query_v1.schema.json)の`anchor`（record_id、after/before）に従い、結果は既存と同じ`rows[]`（配列）を返す。
+
+1. 認証されたvehicle内にanchor `record_id`があることを検証。他車両・不存在の区別を過度に露出せず安全に拒否。
+2. 当該観測の`run_id`と`sequence`をDBで解決。v1は**自動的に同じrunに限定**し、同じvehicle内でも別runのBを返さない。
+3. afterは`sequence > anchor.sequence`、beforeは`sequence < anchor.sequence`を適用する。該当観測A自身を返さない。
+4. 「次」は**保存済みの取得イベントの論理的な次**。sequenceの欠番があるなら次に存在するイベントを返し、欠番を無理に生成／補完しない。Gapと未着がある場合は品質情報から区別できる。
+5. `where.is_present(parameter_id)`を指定すれば、そのパラメーターが実際に取得された観測だけを返す。フィルターなしでは途中プロファイルの未計測null行が混じり得る。数値条件・単位・profile版の扱いは通常queryと同一。
+6. afterは`sequence ASC`で直後からN件を選び、そのまま応答。beforeは`sequence DESC`で直前からN件を選択し、**出力時にsequence ASCへ整列**する（つまり近傍N件が返り、先頭から遠いN件を誤って取得しない）。
+7. `order`が明示される場合は`sequence asc`のみ許可。省略時もanchor検索はこれを標準とする。一般の時刻／runをまたぐ検索では従来のorder仕様を維持。
+8. anchorに**非nullのcursor**を同時指定することを禁止。最初のanchor検索の`next_cursor`から先は、同じfilter/scope/selectを再指定してcursorでページ継続する。cursorは元のanchor、検索境界、最後の返却キーと認可主体を保持し、アンカーの繰り返し実行と混同しない。
+9. anchorは「検索開始位置」を決めるためのもので、WHERE値条件そのものに一致する必要はない。ただし指定runや時間scopeと矛盾するときは拒否。検索snapshopの確定取込watermarkによって、後着レコードが既存ページへ割り込まない。
+
+**用例:** 4件の保存済み同一run観測A(seq=10)、B(11)、C(12)、D(13)について、Aをanchor、after、limit=3、where P8 is_presentとすれば**B/C/Dの3行が1回**で返る。`limit=1`ならBのみ。A→B間にseq=11の欠番があれば、次の保存済みデータCが返るが、Bが完全に存在しないのか未着かは別情報として示す。
+
+### 4.4 ページング・安定性
 
 - 初回取得時、閲覧車両についてDBが**commit済みとして確定したingest watermark**を固定し、カーソルに埋め込む。DB側の書込みとスナップショット境界は同じ車両ロックの規則に従う。
 - ソートは指定sortとタイブレーク（run_id、sequence、record_id等）で完全順序を持つ。次ページは`WHERE tuple > last_tuple`型のkeyset pagination。
