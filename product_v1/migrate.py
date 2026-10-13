@@ -4,6 +4,8 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
+from . import store
 
 
 def config() -> Config:
@@ -24,7 +26,15 @@ def main() -> None:
     elif args.action == "history":
         command.history(cfg, verbose=True)
     else:
-        command.check(cfg)
+        expected = ScriptDirectory.from_config(cfg).get_current_head()
+        with store.connect() as db:
+            row = db.execute("SELECT version_num FROM v1_alembic_version").fetchone()
+        observed = row["version_num"] if row else None
+        if observed != expected:
+            raise SystemExit(
+                f"Schema migration mismatch: database={observed!r}, expected={expected!r}"
+            )
+        print(f"Product-v1 schema is current: {observed}")
 
 
 if __name__ == "__main__":
