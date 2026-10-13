@@ -17,6 +17,11 @@ def init():
         if _SCHEMA_READY:
             return
         with connect() as db:
+            # All PoC containers (api/mcp/voice-demo) initialize simultaneously.
+            # CREATE TABLE IF NOT EXISTS alone does not serialize PostgreSQL
+            # system-catalog writes across processes. Hold a transaction-scoped
+            # advisory lock for the *entire* set of DDL operations.
+            db.execute("SELECT pg_advisory_xact_lock(731193027141464)")
             db.execute("""CREATE TABLE IF NOT EXISTS samples (
                 session text NOT NULL, seq bigint NOT NULL, segment integer NOT NULL,
                 timestamp_ms bigint NOT NULL, values_json jsonb NOT NULL,
