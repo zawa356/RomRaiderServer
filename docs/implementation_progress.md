@@ -42,13 +42,25 @@
 | 2.1-D2b-2c-4b-2b | journal原本M/S/E→製品v1 SQLiteの共有変換、cursor CAS、TSV lane排他 | **Agent PR #22マージ、製品SQLite CI両OS合格・実Server E2E未実施（当時）** | [Agent PR #22](https://github.com/zawa356/RomRaider_agent/pull/22) |
 | 2.1-D2b-2c-4b-2c | 最新AgentのTSV/journal→SQLite→FastAPI→実PostgreSQL16／重複ACKの隔離E2E | **CloudPC実Server E2E PASS、6合成観測/2プロフィール/重複0、GitHub実Server CIはSKIPPED** | [Agent PR #23](https://github.com/zawa356/RomRaider_agent/pull/23) |
 | 2.1-D2b-2c-4b-2d-1 | 停止済みjournal用の明示offline Worker、永続review停止、読み取り専用状態CLI | **Agent PR #24マージ、CloudPC 419チェック＋実Server合成7件/3profiles E2E PASS、Windows/Linux CI PASS** | [Agent PR #24](https://github.com/zawa356/RomRaider_agent/pull/24) |
-| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：offline journal-once以外の運用Worker並行読取未実装、電源断時の無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-4b-2d-2a | writer併行RLJ1 read-only診断とUUID sidecar read-only化 | **Agent PR #25マージ、CloudPC/Linux443項目PASS、Windows mandatory FileLockでライブread BLOCKED、両OS CI PASS** | [Agent PR #25](https://github.com/zawa356/RomRaider_agent/pull/25) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：Linux read-only診断のみ、Windowsライブ読取は現行FileLockで不可。確定watermark／運用Workerへの接続／電源断時無欠損は未実装** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Agent Phase 2.1-D2b-2c-4b-2d-2a：read-onlyライブ診断とWindows FileLock阻害の確定
+
+- [Agent PR #25](https://github.com/zawa356/RomRaider_agent/pull/25)をmain統合（merge SHA 022d9daf36c957d62a2ff91b7ce61c690ebac779）。Java8 FileChannel.READで原本のmagic/CRC/sequence/UTF-8、8MiB/128KiB上限、未完了tailと変更中原本を検査する診断プローブ追加。
+- writer用JournalIdentityPrototype.openは空journalにsidecarを作成し得るため、reader用readExistingを分離。現在のProductJournalScanner/IncrementalTsvBridge.importJournalも既存IDのread-only検証だけ行う。sidecar欠落後のUUID誤発行を防ぐ。
+- CloudPC Linuxで旧journal/handoff75＋新live probe24＋製品SQLite/receipt344＝**計443チェックPASS**。160回fsync writerと最大320回reader検査の併行負荷を5反復PASS。
+- Windows runnerでは現行writerのmandatory FileLockがFileChannel.read自体を拒否。[初回Fail CI #38400570091](https://github.com/zawa356/RomRaider_agent/actions/runs/38400570091)で現象確認。新テストはWindowsのライブ読取を**BLOCKED**と明記し、writer終了後の全件readと安全な拒否のみPASS。**Windowsライブ読取が可能になったという意味ではない**。
+- [Agent PR最終journal CI #38401415386](https://github.com/zawa356/RomRaider_agent/actions/runs/38401415386)、[製品v1 CI #38401415202](https://github.com/zawa356/RomRaider_agent/actions/runs/38401415202)でWindows/LinuxのJava8/実SQLite実ステップ成功。[E2E gate #38401415380](https://github.com/zawa356/RomRaider_agent/actions/runs/38401415380)は安全ゲート成功だが、実Server E2EステップSKIPPED。本PhaseでCloudPC実PostgreSQL E2Eは実行していない。
+- **未実装**：fsyncが完了したフレームをreader側から確認するdurable watermark、Windows対応のwriter lock設計、rotation、常駐worker取込、Supervisor実通知、32bit/ディスクフル/物理電源断・実車。診断結果は製品SQLite cursorやServer ACKを進めない。Caddy/MCP/Server実装/本番環境への変更なし。[設計・試験](https://github.com/zawa356/RomRaider_agent/blob/main/docs/phase_2_1_d2b_2c_4b_2d_2a_live_readonly_probe.md)。
+
+
 
 ### 2026-10-13 — Agent Phase 2.1-D2b-2c-4b-2d-1：offline Journal Worker・持続review停止
 
