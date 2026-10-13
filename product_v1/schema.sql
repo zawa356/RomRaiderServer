@@ -65,7 +65,7 @@ CREATE INDEX IF NOT EXISTS v1_records_vehicle_time
 CREATE TABLE IF NOT EXISTS v1_values (
   record_id uuid NOT NULL REFERENCES v1_records(record_id),
   parameter_id text NOT NULL,
-  value double precision NOT NULL CHECK (isfinite(value)),
+  value double precision NOT NULL CHECK (value > '-Infinity'::float8 AND value < 'Infinity'::float8),
   PRIMARY KEY (record_id,parameter_id)
 );
 CREATE INDEX IF NOT EXISTS v1_values_filter
