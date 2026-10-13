@@ -37,13 +37,24 @@
 | 2.1-D2b-2c-2 | 旧TSV writerの64KiB分割書込・IOException/RuntimeException後のrollback | **Agent PR #16・合成CI合格** | [Agent PR #16](https://github.com/zawa356/RomRaider_agent/pull/16) |
 | 2.1-D2b-2c-3 | writer未fsync待機行・障害状態の観測、queue飽和後の回復試験 | **Agent PR #17マージ・44チェック合成CI合格** | [Agent PR #17](https://github.com/zawa356/RomRaider_agent/pull/17) |
 | 2.1-D2b-2c-4a | 永続入口ジャーナル独立PoC（fsync/CRC/seq/quota/異常終了） | **Agent PR #18・Windows/Linux 34チェック合成CI PASS、製品接続なし** | [Agent PR #18](https://github.com/zawa356/RomRaider_agent/pull/18) |
-| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：2c-4aは製品未接続PoC、無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-4b-1 | 独立volatile handoff、専用worker故障保持、stable replay ID | **Agent PR #19・Linux/Windows合成75チェックPASS、実SQLite未接続** | [Agent PR #19](https://github.com/zawa356/RomRaider_agent/pull/19) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：4b-1も製品未接続PoC、無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Agent D2b-2c-4b-1：非ブロッキング受渡し／リプレイIDの契約PoC
+
+- [Agent PR #19](https://github.com/zawa356/RomRaider_agent/pull/19) マージ済み（Agent main `550f7da05f0624262713e2d9bb8c24642ec7456e`）。`IngressHandoffPrototype`をLogger/旧TSV/製品v1/Serverと**未接続の独立PoC**として追加。
+- callback相当の`offer`は有限queueへの揮発性受理のみ。`drainOne`が専用workerでfsync成功して初めてjournal永続化。I/O失敗時のin-flight保持・運用者の明示復帰・quota終端を合成確認。
+- stable journal source UUID＋sequenceを使う決定的record UUIDと分割replayを実装。ただしsource UUIDはファイル内へ永続化されておらず、downstream mockはMapのみ。**実製品SQLite outboxでの重複防止やE2Eは未検証**。
+- CloudPC Java8互換で前Phase34件＋新規41件＝75チェックPASS。[Agent PR CI #38377766471](https://github.com/zawa356/RomRaider_agent/actions/runs/38377766471) はWindows/Linuxともに実試験PASS。詳細は[Agent 4b-1の設計と未達ゲート](https://github.com/zawa356/RomRaider_agent/blob/main/docs/phase_2_1_d2b_2c_4b_1_handoff_contract.md)。
+- メモリ受理後・fsync前の異常終了での欠損、長期I/O停止・有限queueの飽和は未解決。実車・X270 32bit・物理電源断・実Server E2E・本番配備は未実施。本Serverの実装／DB／通信契約／Caddy/MCPへの変更なし。
+
+
 
 ### 2026-10-13 — Agent D2b-2c-4a：独立ジャーナルの障害復旧PoC（製品未接続）
 
