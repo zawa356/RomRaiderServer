@@ -2,6 +2,19 @@
 
 設計と実装の両方を追跡する。GitHub PRとCI結果、未着手の機能の正本は[実装進捗](../docs/implementation_progress.md)。
 
+## [1.2-B] Phase 1.2-B（2026-10-13）
+
+### Added
+- Server–Agent wire v1のOpenAPIとFastAPIの7 API／トップレベル必須フィールド／パラメーター値の定義を機械照合するテスト
+- 実レスポンスをJSON Schemaで検証し、契約の変更漏れを検出
+
+### Fixed
+- 状態報告のoptional ECU状態／通信エラー数を保存できるようにし、取得Hz・観測時刻の検証を強化
+- 不正なプロトコルmajor版は422ではなく426を返す
+
+### Verification
+- [PR #17](https://github.com/zawa356/RomRaiderServer/pull/17)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38334888281)：**48件PASS**、Docker起動成功。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38334888242)を実行。Agent接続、実ECU試験、本番CDは未実施
+
 ## [1.2-A] Phase 1.2-A（2026-10-13）
 
 ### Fixed
