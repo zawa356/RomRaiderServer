@@ -169,8 +169,13 @@ class ReconcileRequest(StrictModel):
 
 class Acquisition(StrictModel):
     last_observed_at: datetime | None
-    recent_hz: float | None
+    recent_hz: float | None = Field(ge=0, allow_inf_nan=False)
     drop_count: int = Field(ge=0)
+
+    @field_validator("last_observed_at")
+    @classmethod
+    def last_time_aware(cls, value):
+        return check_aware(value) if value is not None else None
 
 
 class Spool(StrictModel):
@@ -183,13 +188,15 @@ class DeviceStatus(StrictModel):
     device_id: UUID
     vehicle_id: UUID
     reported_at: datetime
-    agent_version: str
+    agent_version: str = Field(min_length=1, max_length=128)
     logger_state: Literal["not_started", "starting", "logging", "stopped", "error", "unknown"]
     acquisition: Acquisition
     spool: Spool
     run_id: UUID | None = None
     segment_id: UUID | None = None
     profile_revision_id: UUID | None = None
+    ecu_state: str | None = Field(default=None,max_length=256)
+    link_error_count: int | None = Field(default=None,ge=0)
 
     @field_validator("reported_at")
     @classmethod
@@ -302,6 +309,12 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     # Do not echo raw user-supplied input, Authorization or stack traces.
     issues = [{"loc": [str(p) for p in e.get("loc", ())],
                "type": e.get("type", "invalid")} for e in exc.errors()]
+    if any(e.get("loc") == ("body", "protocol_version") and
+           e.get("type") == "literal_error" for e in exc.errors()):
+        # Contract v1 distinguishes an unsupported major version (426)
+        # from other invalid fields (422). No partial processing has occurred.
+        return error_response(request, 426, "UNSUPPORTED_PROTOCOL_VERSION",
+                              "Unsupported Agent API protocol version")
     return error_response(request, 422, "INVALID_REQUEST",
                           "Request does not match the v1 schema",
                           details={"issues": issues})
