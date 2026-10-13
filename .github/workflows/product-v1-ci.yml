@@ -60,6 +60,11 @@ jobs:
           python -m pip install 'pytest>=8,<10' 'httpx>=0.27,<1'
       - name: Compile server product modules
         run: python -m compileall -q product_v1
+      - name: Apply and verify versioned schema
+        run: |
+          python -m product_v1.migrate upgrade
+          python -m product_v1.migrate upgrade
+          python -m product_v1.migrate check
       - name: Run PostgreSQL integration and contract tests
         run: python -m pytest -v tests/test_product_v1.py
 
