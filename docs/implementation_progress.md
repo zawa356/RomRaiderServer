@@ -30,13 +30,23 @@
 | 2.1-C2b | Agent最新main自動同期・継続E2E／既存RRBridge常駐統合 | 未着手（Agent側のPrivate token付きE2EはNOT RUN） | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 2.1-D1 | 旧TSV増分取込・SQLite永続offset・保存直後クラッシュ復旧 | **完了（Windows/Linux合成CI）** | [Agent PR #8](https://github.com/zawa356/RomRaider_agent/pull/8) |
 | 2.1-D2a | 最新増分Agentの実Server E2E再pin／未完結行・再起動・重複再送 | **実Server合成CI PASS・PR #24** | [Server PR #24](https://github.com/zawa356/RomRaiderServer/pull/24)／[Agent PR #9](https://github.com/zawa356/RomRaider_agent/pull/9) |
-| 2.1-D2b | データ欠損対策・安全な常駐送信／バックオフ | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
+| 2.1-D2b-1 | 別Java Worker／SQLite永続再試行・要調査停止／既読TSV消失検出 | **Windows/Linux合成CI各208件PASS** | [Agent PR #11](https://github.com/zawa356/RomRaider_agent/pull/11) |
+| 2.1-D2b-2 | 旧Queue満杯drop・TSV writer失敗時の原本消失・旧ACK cleanupと製品v1整合 | **未実装（重大リスクとして特定）** | [Agent欠損分析](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_delivery_worker.md) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-D2b-1：製品Workerの永続backoff・障害停止と旧PoC欠損分析
+
+- [Agent PR #11](https://github.com/zawa356/RomRaider_agent/pull/11)で、`v1_delivery_state`による再試行回数／次回期限／要調査停止のSQLite永続化、2秒開始・最大120秒の指数backoff、明示起動の独立`ProductBridgeWorker`を実装。Logger JVM内・ECU操作系は変更しない
+- ファイル既読後の消失・symlink・64ファイル超は安全側に停止。`ProductBridgeOnce`も永続停止ゲートを経由し、手動CLIからの暗黙迂回を禁止
+- [Agent CI #38351975064](https://github.com/zawa356/RomRaider_agent/actions/runs/38351975064)：Windows/Linuxそれぞれ**SQLite42＋HTTP41＋旧TSV16＋増分37＋retry47＋監視14＋別JVM11＝208項目PASS**。別JVMで定義→計測バッチ→ACK保持を合成HTTPモックで確認
+- **旧PoC側の未解決重大リスク**：`Stream.offer()`はqueue満杯で行破棄、`writerLoop()`はキューから行を取り出した**後**にwriteが失敗するとバッファを破棄し得る。`cleanupSpool()`は旧Receiverの`.sent`完了と14日基準でTSVを削除し、製品v1のSQLite／DB保存確定ACKと独立する。製品Workerが初めて監視する前の元TSV消失は検知できない
+- [詳細・次Phaseの保全対象](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_delivery_worker.md)：D2b-2で上流データ保全・旧ファイル削除条件と最新／過去の公平転送を検討。Retry-After・409/422レコード隔離・実車／disk-full／電源断・安全Supervisorは未実装
+- **Server側の実E2E pinはD2a時点のAgent commit 668ad523**であり、今回のWorker／永続backoffを含む実Server E2Eは未検証。Client単体CIが成功しても製品完全導入とは扱わない
 
 ### 2026-10-13 — Phase 2.1-D2a：最新増分Agentを実Server E2Eへ再pin（CI合格）
 
