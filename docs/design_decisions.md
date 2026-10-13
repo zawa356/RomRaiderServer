@@ -44,7 +44,7 @@
 | ADR-027 | 委任判断 | MCP Queryは制限付きAST＋keyset cursor、SQL非公開 | 柔軟な解析と権限／資源制限を両立 |
 | ADR-028 | 委任判断 | PostgreSQL／FastAPI系でServerを構成（候補） | PoC知見と保守性。SDK／依存版は実装時固定 |
 | ADR-029 | 委任判断 | シンプルなServer Worker、初版Redis／Kafka無し | 常時LLM不要、個人運用の複雑性を抑制 |
-| ADR-030 | 委任判断 | 管理CLIで端末登録・承認・認証情報更新 | MCU/MCPからの無制限な管理操作を避ける |
+| ADR-030 | 委任判断 | 管理CLIで端末登録・承認・認証情報更新 | MCU/MCPからの無制限な管理操作を避ける |\n| ADR-031 | 委任判断 | MCPのquery_telemetryで任意record_idを起点に同一runの次／前N観測を一括検索（is_present条件、cursor継続） | 1値1コールを防ぎ、Aの次の値を直接参照できるようにする |
 
 ## 2. 技術検証結果を必要とする項目
 

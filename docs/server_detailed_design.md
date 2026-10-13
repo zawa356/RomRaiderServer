@@ -143,6 +143,17 @@ sequenceDiagram
 
 **大きい表:** JSONB原本のみで検索が遅い場合、値ごとの検索用補助テーブルを併用してよい。原本の値・時刻・来歴を二重に変換するのではなく、原本に対する関係として保存する。
 
+### 6.1 既知レコードから次の観測を取得する（anchor検索）
+
+MCPの`query_telemetry`は、通常の時間・条件検索に加えて`anchor.record_id`で**同一runの前後の保存済み観測をN件**取得できる。Serverは認可vehicle内でanchorの`run_id`と`sequence`を解決し、他runへの自動越境を禁止する。`where.is_present`は対象parameter_idが実際に存在する行だけを条件化する。
+
+- `after`は`sequence > anchor.sequence`を昇順で検索。
+- `before`は`sequence < anchor.sequence`を降順でN件選択してから昇順で返す。続きのcursorは再びanchor側から遠い方向へ辿れるようにする。
+- `anchor`とnon-null `cursor`の併用は入力エラー。カーソルの検索条件／観測開始点／取込watermarkを維持する。
+- A自身が`where`の値条件に一致する必要はないが、Aは認可された車両と明示scopeに属する必要がある。
+- 欠番・未着・未取得・プロファイル非対象の意味を区別。取得済みの次の行を返すだけで未着が無いと証明しない。
+- 通常検索と同じ応答配列`rows`、`limit`、`next_cursor`を利用し、1ツール呼出し1値にはしない。
+
 ## 7. 数値監視・解析履歴（LLM非依存）
 
 - Server workerは新たにcommitされた**イベント到着ID**を位置カーソルとして消費し、MonitorRuleごとの基準と状態を管理する。監視状態・最終処理IDを同一DB transactionで確定し、再実行しても同じMonitorEventを重複発行しない。
