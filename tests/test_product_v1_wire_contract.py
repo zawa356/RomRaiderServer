@@ -12,7 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator, FormatChecker
 
-from product_v1 import store
+from product_v1 import store, commands
 from product_v1.api import app
 
 
@@ -91,19 +91,17 @@ def test_nested_wire_models_keep_required_fields(reference, actual):
 
 
 def test_restricted_action_and_state_enumerations_do_not_drift():
-    enums = (
-        ("CommandLease", "action"),
-        ("CommandReportRequest", "state"),
-        ("ParameterCapability", "availability"),
-    )
-    mapping = {
-        "CommandLease":"CommandLease",
-        "CommandReportRequest":"CommandReportRequest",
-        "ParameterCapability":"CapabilityParameter",
-    }
-    for schema_name, field in enums:
+    allowed = CONTRACT["components"]["schemas"]["CommandLease"]["properties"]["action"]["enum"]
+    # Deliberately stricter safety gate: full wire allows future actions,
+    # but only this non-actuating operation is deliverable in Phase 1.2.
+    assert set(commands.DELIVERABLE_ACTIONS) == {"suspend_ai_changes"}
+    assert set(commands.DELIVERABLE_ACTIONS).issubset(set(allowed))
+    for schema_name, runtime, field in (
+        ("CommandReportRequest","CommandReportRequest","state"),
+        ("ParameterCapability","CapabilityParameter","availability"),
+    ):
         reference = CONTRACT["components"]["schemas"][schema_name]["properties"][field]
-        live = RUNNING["components"]["schemas"][mapping[schema_name]]["properties"][field]
+        live = RUNNING["components"]["schemas"][runtime]["properties"][field]
         assert set(reference["enum"]) == set(live["enum"])
 
 
