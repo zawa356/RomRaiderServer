@@ -14,7 +14,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from psycopg.errors import IntegrityError
 
-from . import store
+from . import store, commands
 
 
 class StrictModel(BaseModel):
@@ -123,6 +123,49 @@ class Batch(StrictModel):
     )
 
 
+class CommandClaimRequest(StrictModel):
+    protocol_version: Literal[1]
+    device_id: UUID
+    vehicle_id: UUID
+    current_plan_revision_id: UUID | None = None
+    client_state_revision: str = Field(min_length=1,max_length=128)
+
+
+class CommandReportRequest(StrictModel):
+    protocol_version: Literal[1]
+    device_id: UUID
+    vehicle_id: UUID
+    command_id: UUID
+    report_id: UUID
+    state: Literal["received","rejected","applying","applied_unverified",
+                   "verified","failed","expired","cancelled","unknown"]
+    observed_profile_revision_id: UUID | None = None
+    result_reason: str | None = Field(default=None,max_length=1024)
+    reported_at: datetime
+
+    @field_validator("reported_at")
+    @classmethod
+    def aware(cls, value):
+        return check_aware(value)
+
+
+class ReconcileRequest(StrictModel):
+    protocol_version: Literal[1]
+    device_id: UUID
+    vehicle_id: UUID
+    reported_at: datetime
+    client_state_revision: str = Field(min_length=1,max_length=128)
+    current_run_id: UUID | None = None
+    observed_profile_revision_id: UUID | None = None
+    last_command_id: UUID | None = None
+    local_execution_records: list[dict] = Field(default_factory=list,max_length=64)
+
+    @field_validator("reported_at")
+    @classmethod
+    def aware(cls, value):
+        return check_aware(value)
+
+
 class Acquisition(StrictModel):
     last_observed_at: datetime | None
     recent_hz: float | None
@@ -194,8 +237,14 @@ def error_response(request: Request, status: int, code: str, message: str,
 @app.middleware("http")
 async def request_guard(request: Request, call_next):
     request.state.request_id = str(uuid4())
-    if request.url.path == "/api/agent/v1/telemetry/batches":
-        max_bytes = 512 * 1024
+    path = request.url.path
+    max_bytes = (
+        512 * 1024 if path == "/api/agent/v1/telemetry/batches"
+        else 64 * 1024 if path == "/api/agent/v1/reconcile"
+        else 16 * 1024 if path.startswith("/api/agent/v1/commands/")
+        else None
+    )
+    if max_bytes is not None:
         # A bounded body check is required even when Content-Length is omitted.
         size = request.headers.get("content-length")
         if size is not None:
@@ -285,3 +334,19 @@ def post_status(request: DeviceStatus, device=Depends(require_device)):
 def recent(limit: int = Query(100, ge=1, le=500), device=Depends(require_device)):
     """Temporary authenticated readback for the Server-first phase, NOT public MCP."""
     return store.recent_records(device,limit)
+
+@app.post("/api/agent/v1/reconcile")
+def agent_reconcile(request: ReconcileRequest, device=Depends(require_device)):
+    return commands.reconcile(device,request.model_dump(mode="json",exclude_none=True))
+
+
+@app.post("/api/agent/v1/commands/claim")
+def agent_claim(request: CommandClaimRequest, device=Depends(require_device)):
+    return commands.claim(device,request.model_dump(mode="json",exclude_none=True))
+
+
+@app.post("/api/agent/v1/commands/{command_id}/report")
+def agent_report(command_id: UUID, request: CommandReportRequest,
+                 device=Depends(require_device)):
+    return commands.report(device,command_id,request.model_dump(mode="json",exclude_none=True))
+
