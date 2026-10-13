@@ -1,0 +1,78 @@
+name: Product v1 contract CI
+
+on:
+  push:
+    branches: [main, 'feat/**']
+    paths:
+      - 'product_v1/**'
+      - 'tests/test_product_v1.py'
+      - '.github/workflows/product-v1-ci.yml'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - 'compose.product-v1.yaml'
+  pull_request:
+    paths:
+      - 'product_v1/**'
+      - 'tests/test_product_v1.py'
+      - '.github/workflows/product-v1-ci.yml'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - 'compose.product-v1.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-v1-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract-postgresql:
+    name: Atomic ACK and device authorization (PostgreSQL 16)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: romlogger
+          POSTGRES_DB: romlogger_ci
+          POSTGRES_PASSWORD: ci_only_disposable_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U romlogger -d romlogger_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://romlogger:ci_only_disposable_password@127.0.0.1:5432/romlogger_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install runtime and test dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install 'pytest>=8,<10' 'httpx>=0.27,<1'
+      - name: Compile server product modules
+        run: python -m compileall -q product_v1
+      - name: Run PostgreSQL integration and contract tests
+        run: python -m pytest -v tests/test_product_v1.py
+
+  isolated-image:
+    name: Product API container build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build product container (do not deploy)
+        run: docker build -t romlogger:v1-ci .
+      - name: Validate product Compose overlay
+        env:
+          POSTGRES_PASSWORD: ci_only_disposable_password
+          DATABASE_URL: postgresql://romlogger:ci_only_disposable_password@db:5432/romlogger_ci
+        run: docker compose -f compose.yaml -f compose.product-v1.yaml config -q
