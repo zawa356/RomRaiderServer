@@ -305,3 +305,11 @@
 - [PR #11](https://github.com/zawa356/RomRaiderServer/pull/11)／`91bd4752297bb4a28a045b99c15984ef5101cc31`
 - PoCコンテナ同時DDLの競合をadvisory lockで解消、read-only MCP tools/listの起動待ちを修正
 - 既存PoCの試験を成功させたが、**実ECUに対する試験ではない**
+
+### 2026-10-13 夜 — Agent Phase 4b-2d-2b-1 lock分離独立PoC
+
+- [Agent PR #27](https://github.com/zawa356/RomRaider_agent/pull/27): 純粋な.writer.lockは旧writerとの二重起動を両起動順で許す反例。候補は別writer lock＋journal 8MiB位置の1byte guard。既存whole-file lockと交差し、データ領域の別JVM readはWindows/Linuxで成功。旧writer/製品Worker/正式IF/Serverコード・DBは変更なし。
+- 初回Linux試験で同一JVMの診断handle closeがPOSIX guardを消すFAIL。所有RandomAccessFileだけで検証する修正後、別JVM所有権matrix39＋既存journal99=138、SQLite/receipt344、計482チェックがWSLとVPS1でPASS。
+- Agent journal PR CI38407692420とspool CI38407690527は両OS実ステップsuccess。証跡文書追加後の最新SHA CIは確認中。Agent既存writerのWindows live read BLOCKEDは継続。今回実PostgreSQL E2EはNOT RUN。
+- VPS引継ぎとの差: 提供SSHユーザーcodexを利用、新規/home/codex/git/romlogger-codex-4b2d2b-agentで検証、Gitはlocal ghでpush。資格情報をVPSへ転送せずGit bundleで同期。
+- PoC→運用、同一JVM別handle統合、quota変更、lockファイル置換/削除は保留。watermark独立PoCが次工程。
