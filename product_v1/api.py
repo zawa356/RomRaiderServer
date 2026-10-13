@@ -42,6 +42,31 @@ class ProfileRevision(StrictModel):
     parameters: list[ProfileParameter] = Field(min_length=1, max_length=200)
 
 
+class CapabilityParameter(StrictModel):
+    parameter_id: str = Field(min_length=1, max_length=120)
+    name: str = Field(min_length=1, max_length=256)
+    unit: str = Field(max_length=64)
+    availability: Literal["defined", "possibly_supported", "verified_readable",
+                          "unsupported", "unknown"]
+    evidence: str | None = Field(default=None, max_length=512)
+
+
+class CapabilitySnapshot(StrictModel):
+    protocol_version: Literal[1]
+    device_id: UUID
+    vehicle_id: UUID
+    logger_version: str = Field(min_length=1, max_length=120)
+    definition_fingerprint: str = Field(min_length=1, max_length=256)
+    ecu_identity: str | None = Field(default=None, max_length=256)
+    observed_at: datetime
+    parameters: list[CapabilityParameter] = Field(max_length=1000)
+
+    @field_validator("observed_at")
+    @classmethod
+    def aware(cls, value):
+        return check_aware(value)
+
+
 class MeasurementValue(StrictModel):
     parameter_id: str = Field(min_length=1, max_length=120)
     value: float
@@ -233,6 +258,15 @@ def put_profile(profile_revision_id: UUID, request: ProfileRevision, response: R
     if profile_revision_id != request.profile_revision_id:
         raise fail(422, "PROFILE_ID_MISMATCH", "URL and body profile IDs differ")
     result = store.register_profile(device,request.model_dump(mode="json"))
+    response.status_code = 201 if result["status"] == "registered" else 200
+    return result
+
+
+@app.put("/api/agent/v1/capability-snapshots/{snapshot_id}")
+def put_capability(snapshot_id: UUID, request: CapabilitySnapshot, response: Response,
+                   device=Depends(require_device)):
+    result = store.register_capability(device,str(snapshot_id),
+                                       request.model_dump(mode="json",exclude_none=True))
     response.status_code = 201 if result["status"] == "registered" else 200
     return result
 
