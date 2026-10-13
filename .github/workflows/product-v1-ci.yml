@@ -6,6 +6,7 @@ on:
     paths:
       - 'product_v1/**'
       - 'tests/test_product_v1.py'
+      - 'tests/test_product_v1_credentials.py'
       - '.github/workflows/product-v1-ci.yml'
       - 'requirements.txt'
       - 'Dockerfile'
@@ -14,6 +15,7 @@ on:
     paths:
       - 'product_v1/**'
       - 'tests/test_product_v1.py'
+      - 'tests/test_product_v1_credentials.py'
       - '.github/workflows/product-v1-ci.yml'
       - 'requirements.txt'
       - 'Dockerfile'
@@ -66,7 +68,7 @@ jobs:
           python -m product_v1.migrate upgrade
           python -m product_v1.migrate check
       - name: Run PostgreSQL integration and contract tests
-        run: python -m pytest -v tests/test_product_v1.py
+        run: python -m pytest -v tests/test_product_v1.py tests/test_product_v1_credentials.py
 
   isolated-image:
     name: Product API container build
