@@ -318,3 +318,12 @@
 
 - Agent PR #27 merged、main 60ae43cb366e2d2141905526af3675f0ceb0a759。最新PR76889a6のjournal CI38407931755とspool CI38407931735はWindows/Linuxの実試験/全job success。
 - Agent main journal CI38408152381両OS job/実ステップsuccess、main spool CI38408153111両OS試験success（Windows job完了待ち）。後続watermarkはこのCIの最終完了を確認して分岐する。
+
+### 2026-10-13 23:08 JST — 4b-2d-2b-2 watermark候補 / Windows BLOCKED
+
+- [Agent PR #28](https://github.com/zawa356/RomRaider_agent/pull/28): RLC1 104byte候補(UUID/sequence/offset/fileKeyHash/prefixSHA/CRC)、所有handle fsync→tmp force→atomic replace→directory force。原本/marker破損・置換・連番退行・途中更新を拒否、未公開完全tailを取込対象から除外。製品Worker/DB/ACK非接続。
+- WSL/VPS1 Linux: 新watermark56＋OS primitive3＋既存journal138=197、SQLite/receipt344、合計541チェック相当。最新VPSはjournal197確認、SQLite344は直前0bef713で確認（以後製品/receiptコード非変更）。
+- 初回Windows journal CI38409471808/38409589169 FAIL。OpenJDK Windowsの公開fileKey()は常時null。この条件を緩めずWindowsではwatermark56ケースBLOCKED/NOT RUN、3拒否/保全＋3storage primitiveのみを検証。修正CI38410294031のWindows/Linux実試験success、最新文書SHAのCIは確認中。
+- [公式実装](https://github.com/openjdk/jdk17u/blob/master/src/java.base/windows/classes/sun/nio/fs/WindowsFileAttributes.java)を確認し、ensureAccurateMetadataで解決する推測は撤回。既存起動設定への追加はしない。
+- 2b-3新writer/reader/SQLite結合は**両OSwatermark成立ゲート未達でBLOCKED**。rotation候補は16ファイル/各8MiB、原本+identity+watermark+lockの保全、ACK前/不明時削除禁止、原本不変path/UUID、persistent cursor/receipt同一transactionを設計記録のみ。
+- 代替候補: hardlink anchor/isSameFile、Windows native file index、UUID内包原本形式。既存v1_source_claimsのsession単一source規約とrotationの整合、dir sync/物理電源断、同一JVMhandle closeも未解決。運用承認待ちとして残す。
