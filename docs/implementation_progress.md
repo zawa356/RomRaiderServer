@@ -18,7 +18,7 @@
 | 1.0 | 製品版Server初期受信、原子的ACK、認証、合成データ試験 | **完了（CI確認済み／実車未確認）** | [PR #5](https://github.com/zawa356/RomRaiderServer/pull/5) |
 | 1.0-R | PoC同時起動のDB初期化競合修正 | **完了（CI確認済み）** | [PR #11](https://github.com/zawa356/RomRaiderServer/pull/11) |
 | 1.1-A | Alembic導入・DB版管理・移行を独立工程化 | **完了（CI合格、PR #12）** | [Issue #6](https://github.com/zawa356/RomRaiderServer/issues/6) |
-| 1.1-B | デバイス資格情報の失効・更新と認証試験 | **実装・CI確認中** | Issue #6 |
+| 1.1-B | デバイス資格情報の失効・更新と認証試験 | **完了（CI合格、PR #13）** | [PR #13](https://github.com/zawa356/RomRaiderServer/pull/13) |
 | 1.1-C | Agent能力スナップショット登録と整合性試験 | 未着手 | Issue #6 |
 | 1.1-D | Agent操作／再照合IF（車載操作なし）、耐障害試験 | 未着手 | Issue #6 |
 | 2 | 車載RRBridge spool・送受信 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
@@ -28,7 +28,7 @@
 
 ## 変更履歴
 
-### 2026-10-13 — Phase 1.1-B：端末資格情報の管理（作業中）\n\n- 製品版Server専用のローカル管理CLIでトークン再発行・端末失効・状態照会を実装\n- 端末IDは不変、資格情報のフィンガープリントだけDB保存。再発行時に旧トークンは即時失効\n- 失効は冪等で再有効化は認めない。既存観測・定義・計測実行を削除しない\n- PostgreSQL結合試験で旧tokenの401、再発行tokenの200、失効後401、他端末への影響なしを検証\n- CI成功を確認したら具体的なPRとRun URLを記録する\n\n### 2026-10-13 — Phase 1.1-A：Alembicとスキーマ管理
+### 2026-10-13 — Phase 1.1-B：端末資格情報の管理（作業中）\n\n- 製品版Server専用のローカル管理CLIでトークン再発行・端末失効・状態照会を実装\n- 端末IDは不変、資格情報のフィンガープリントだけDB保存。再発行時に旧トークンは即時失効\n- 失効は冪等で再有効化は認めない。既存観測・定義・計測実行を削除しない\n- PostgreSQL結合試験で旧tokenの401、再発行tokenの200、失効後401、他端末への影響なしを検証\n- [PR #13](https://github.com/zawa356/RomRaiderServer/pull/13)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824590)で**11件PASS**、Docker起動確認。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824542)も成功\n\n### 2026-10-13 — Phase 1.1-A：Alembicとスキーマ管理
 
 - `product_v1/migrations/`に製品版独立の**初期版0001_initial**を追加。既存PoC表を対象にしない
 - 製品APIと管理CLIは起動時DDLを行わず、現在のスキーマ版を**読み取りのみで検証**
