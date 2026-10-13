@@ -39,13 +39,25 @@
 | 2.1-D2b-2c-4a | 永続入口ジャーナル独立PoC（fsync/CRC/seq/quota/異常終了） | **Agent PR #18・Windows/Linux 34チェック合成CI PASS、製品接続なし** | [Agent PR #18](https://github.com/zawa356/RomRaider_agent/pull/18) |
 | 2.1-D2b-2c-4b-1 | 独立volatile handoff、専用worker故障保持、stable replay ID | **Agent PR #19・Linux/Windows合成75チェックPASS、実SQLite未接続** | [Agent PR #19](https://github.com/zawa356/RomRaider_agent/pull/19) |
 | 2.1-D2b-2c-4b-2a | journal UUID sidecar＋独立実SQLite receipt／cursor原子的commit | **Agent PR #20・Linux/Windows実SQLite回帰PASS、製品v1変換未接続** | [Agent PR #20](https://github.com/zawa356/RomRaider_agent/pull/20) |
-| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：4b-2aも製品未接続PoC、電源断時の無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-4b-2b | journal原本M/S/E→製品v1 SQLiteの共有変換、cursor CAS、TSV lane排他 | **Agent PR #22マージ、製品SQLite CI両OS合格・実Server E2E未実施** | [Agent PR #22](https://github.com/zawa356/RomRaider_agent/pull/22) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：journalは明示取込のみで運用Workerへ未接続、電源断時の無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Agent Phase 2.1-D2b-2c-4b-2b：journalから製品v1への明示取込とレーン排他
+
+- [Agent PR #22](https://github.com/zawa356/RomRaider_agent/pull/22)をmainへ統合（Agent SHA f3898a942b3b3b83e7ce77e8b28113a15d806439）。CloudPCのjr2twt隔離cloneで実装・Java8互換コンパイル・実SQLite検証・commit/pushを実施。
+- IncrementalTsvBridge.importJournalでjournal M/S/EをCRC/seq/identity検査後、旧TSVと**同じ**profile/record UUIDで製品v1_profiles／v1_recordsに保存。journal専用のsource UUID・path・先頭SHA/累積SHA・定義snapshot付きCAS cursor。製品レコードcommit後にcheckpointする。
+- SQLiteにv1_source_claimsを追加しdevice/vehicle/session単位でjournalと増分・旧一括TSVの二重受入れを拒否。旧runレコードのみ存在する移行状態、改ざん後CRC再計算、journalコピー移設、別JVMがrecord commit後/cursor前に異常終了した回復ケースも試験。
+- CloudPC：製品v1＋SQLite receipt **284項目PASS**（新規journal→製品試験35件含む）＋journal/handoff **75項目PASS**、計359件。テストの1件追加に伴う旧期待値で初回1件FAIL後、修正し全試験PASS。[PR CI #38384554767](https://github.com/zawa356/RomRaider_agent/actions/runs/38384554767)でUbuntu/Windows製品SQLiteステップPASS。
+- **E2E注意**：[real-server-e2e #38384554699](https://github.com/zawa356/RomRaider_agent/actions/runs/38384554699)はjob status successだが、**実Agent→FastAPI→PostgreSQLの試験ステップはskipped**。E2E実施済みと記載しない。
+- 取込APIは明示呼び出しまで。Logger callback・実Worker経路・X270・実ECU・本番Server・Caddy/MCPへの配備・変更なし。無欠損、電源断、Windows32bit、ディスクフル、実Server ACKは未検証。詳細：[Agent設計・試験](https://github.com/zawa356/RomRaider_agent/blob/main/docs/phase_2_1_d2b_2c_4b_2b_journal_to_product.md)。
+
+
 
 ### 2026-10-13 — Agent Phase 2.1-D2b-2c-4b-2a：journal UUID・実SQLite受領原子カーソル
 
