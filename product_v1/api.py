@@ -3,13 +3,14 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from math import isfinite
 from typing import Annotated, Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 import hashlib
 import os
 import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from psycopg.errors import IntegrityError
 
@@ -157,19 +158,68 @@ def require_device(authorization: str | None = Header(None)):
     return row
 
 
+def error_response(request: Request, status: int, code: str, message: str,
+                   retryable: bool = False, details=None):
+    return JSONResponse(status_code=status, content={
+        "request_id": getattr(request.state, "request_id", str(uuid4())),
+        "error": {"code": code, "message": message, "retryable": retryable,
+                  "details": details or {}}})
+
+
+@app.middleware("http")
+async def request_guard(request: Request, call_next):
+    request.state.request_id = str(uuid4())
+    if request.url.path == "/api/agent/v1/telemetry/batches":
+        max_bytes = 512 * 1024
+        # A bounded body check is required even when Content-Length is omitted.
+        size = request.headers.get("content-length")
+        if size is not None:
+            try:
+                if int(size) > max_bytes:
+                    return error_response(request, 413, "PAYLOAD_TOO_LARGE",
+                                          "Maximum batch body size exceeded")
+            except ValueError:
+                return error_response(request, 400, "BAD_CONTENT_LENGTH",
+                                      "Invalid Content-Length header")
+        if len(await request.body()) > max_bytes:
+            return error_response(request, 413, "PAYLOAD_TOO_LARGE",
+                                  "Maximum batch body size exceeded")
+    return await call_next(request)
+
+
 @app.exception_handler(store.DomainError)
 async def domain_error_handler(request: Request, exc: store.DomainError):
-    return JSONResponse(status_code=exc.status, content={
-        "error": {"code": exc.code, "message": exc.message, "retryable": False,
-                  "details": exc.details}})
+    return error_response(request, exc.status, exc.code, exc.message,
+                          details=exc.details)
 
 
 @app.exception_handler(IntegrityError)
 async def integrity_error_handler(request: Request, exc: IntegrityError):
     # A concurrent duplicate/constraint failure is never an ACK.
-    return JSONResponse(status_code=409, content={
-        "error": {"code": "DATABASE_CONSTRAINT_CONFLICT", "message": "Conflicting record",
-                  "retryable": False}})
+    return error_response(request, 409, "DATABASE_CONSTRAINT_CONFLICT",
+                          "Conflicting record")
+
+
+@app.exception_handler(HTTPException)
+async def http_error_handler(request: Request, exc: HTTPException):
+    detail = exc.detail
+    if isinstance(detail, dict) and isinstance(detail.get("error"), dict):
+        e = detail["error"]
+        return error_response(request, exc.status_code, e["code"], e["message"],
+                              retryable=e.get("retryable", False),
+                              details=e.get("details"))
+    return error_response(request, exc.status_code, "HTTP_ERROR",
+                          "The operation was rejected")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    # Do not echo raw user-supplied input, Authorization or stack traces.
+    issues = [{"loc": [str(p) for p in e.get("loc", ())],
+               "type": e.get("type", "invalid")} for e in exc.errors()]
+    return error_response(request, 422, "INVALID_REQUEST",
+                          "Request does not match the v1 schema",
+                          details={"issues": issues})
 
 
 @app.get("/health")
