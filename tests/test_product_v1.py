@@ -66,8 +66,9 @@ def test_health_and_device_auth(ctx):
 
 def test_profile_duplicate_and_collision(ctx):
     p=profile(ctx)
-    assert register(ctx,p).status_code == 200
-    assert register(ctx,p).status_code == 200
+    assert register(ctx,p).status_code == 201
+    replay=register(ctx,p)
+    assert replay.status_code == 200 and replay.json()["status"]=="already_registered"
     different=profile(ctx,ident=p["profile_revision_id"],unit="rpm2")
     r=register(ctx,different)
     assert r.status_code == 409, r.text
@@ -77,7 +78,7 @@ def test_profile_duplicate_and_collision(ctx):
 
 
 def test_atomic_commit_ack_replay_and_conflicts(ctx):
-    p=profile(ctx); assert register(ctx,p).status_code==200
+    p=profile(ctx); assert register(ctx,p).status_code==201
     run,segment=uuid4(),uuid4()
     a=observation(p["profile_revision_id"],0,segment=segment)
     b=observation(str(uuid4()),1,segment=segment)
@@ -106,7 +107,7 @@ def test_atomic_commit_ack_replay_and_conflicts(ctx):
 
 
 def test_profile_and_parameter_validation(ctx):
-    p=profile(ctx);assert register(ctx,p).status_code==200
+    p=profile(ctx);assert register(ctx,p).status_code==201
     run=uuid4()
     duplicate_params=observation(p["profile_revision_id"],1)
     duplicate_params["values"].append(dict(duplicate_params["values"][0]))
