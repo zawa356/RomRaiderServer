@@ -39,14 +39,26 @@
 | 2.1-D2b-2c-4a | 永続入口ジャーナル独立PoC（fsync/CRC/seq/quota/異常終了） | **Agent PR #18・Windows/Linux 34チェック合成CI PASS、製品接続なし** | [Agent PR #18](https://github.com/zawa356/RomRaider_agent/pull/18) |
 | 2.1-D2b-2c-4b-1 | 独立volatile handoff、専用worker故障保持、stable replay ID | **Agent PR #19・Linux/Windows合成75チェックPASS、実SQLite未接続** | [Agent PR #19](https://github.com/zawa356/RomRaider_agent/pull/19) |
 | 2.1-D2b-2c-4b-2a | journal UUID sidecar＋独立実SQLite receipt／cursor原子的commit | **Agent PR #20・Linux/Windows実SQLite回帰PASS、製品v1変換未接続** | [Agent PR #20](https://github.com/zawa356/RomRaider_agent/pull/20) |
-| 2.1-D2b-2c-4b-2b | journal原本M/S/E→製品v1 SQLiteの共有変換、cursor CAS、TSV lane排他 | **Agent PR #22マージ、製品SQLite CI両OS合格・実Server E2E未実施** | [Agent PR #22](https://github.com/zawa356/RomRaider_agent/pull/22) |
-| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：journalは明示取込のみで運用Workerへ未接続、電源断時の無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-4b-2b | journal原本M/S/E→製品v1 SQLiteの共有変換、cursor CAS、TSV lane排他 | **Agent PR #22マージ、製品SQLite CI両OS合格・実Server E2E未実施（当時）** | [Agent PR #22](https://github.com/zawa356/RomRaider_agent/pull/22) |
+| 2.1-D2b-2c-4b-2c | 最新AgentのTSV/journal→SQLite→FastAPI→実PostgreSQL16／重複ACKの隔離E2E | **CloudPC実Server E2E PASS、6合成観測/2プロフィール/重複0、GitHub実Server CIはSKIPPED** | [Agent PR #23](https://github.com/zawa356/RomRaider_agent/pull/23) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：journalは明示取込のみで運用Worker未接続、電源断時の無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Agent Phase 2.1-D2b-2c-4b-2c：最新Agent実FastAPI/PostgreSQL16隔離E2E
+
+- [Agent PR #23](https://github.com/zawa356/RomRaider_agent/pull/23)をmainへ統合（merge SHA eafcc5f23204aaee5667420948361a8cfeb469a2）。CloudPC上の最新Agent/Serverの両private repository cloneと専用PostgreSQL16を用い、実験を実行。
+- Ubuntu公式PostgreSQL16をjr2twt専用作業領域へdeb隔離展開して127.0.0.1:25432の使い捨てDBに接続。systemd PostgreSQL登録・既存5432・Caddy/MCP・本番環境は非変更。FastAPIは127.0.0.1:18083で試験中のみ起動。
+- 最新Agentの既存TSV経路と新journal経路から製品SQLite→実FastAPI→PostgreSQL16のプロフィール／バッチ完全ACKと、fresh SQLiteからの重複再送まで実証。実DBに**合成観測TSV3＋journal3＝6件、プロフィール2件、record UUID重複0件**。Serverスキーマ現在版0003_commandsを確認。
+- DB誤接続防止の明示opt-in、ループバック限定、DB名romlogger_*_e2e、URLクエリ禁止を追加。DB接続前の負試験6件PASS。旧SQLite/receipt回帰284件、journal/handoff75件（計359）PASS。
+- [Agent PR CI #38387724747](https://github.com/zawa356/RomRaider_agent/actions/runs/38387724747) Ubuntu/Windows製品v1試験PASS。[Agent E2E gate #38387724771](https://github.com/zawa356/RomRaider_agent/actions/runs/38387724771)は安全ガードステップPASSだが、**本物のServer E2EはSKIPPED**。CloudPCの実Server PASSとは明確に区別する。
+- 実行Worker/Loggerへのjournal自動接続、実車・X270、Windows32bit、電源断、ディスク逼迫は未実装・未検証。Serverアプリ/契約/DBコードを変更したわけではない。詳細：[Agent Phase4b-2c設計証跡](https://github.com/zawa356/RomRaider_agent/blob/main/docs/phase_2_1_d2b_2c_4b_2c_real_postgres_e2e.md)。
+
+
 
 ### 2026-10-13 — Agent Phase 2.1-D2b-2c-4b-2b：journalから製品v1への明示取込とレーン排他
 
