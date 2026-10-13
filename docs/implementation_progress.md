@@ -32,13 +32,21 @@
 | 2.1-D2a | 最新増分Agentの実Server E2E再pin／未完結行・再起動・重複再送 | **実Server合成CI PASS・PR #24** | [Server PR #24](https://github.com/zawa356/RomRaiderServer/pull/24)／[Agent PR #9](https://github.com/zawa356/RomRaider_agent/pull/9) |
 | 2.1-D2b-1 | 別Java Worker／SQLite永続再試行・要調査停止／既読TSV消失検出 | **Windows/Linux合成CI各208件PASS** | [Agent PR #11](https://github.com/zawa356/RomRaider_agent/pull/11) |
 | 2.1-D2b-2a | 旧TSV writerの障害再試行・queue欠損可視化・旧ACKによる原本削除の禁止 | **完了（Linux/Windows合成CI各19件）** | [Agent PR #12](https://github.com/zawa356/RomRaider_agent/pull/12) |
-| 2.1-D2b-2b | queue飽和そのものの防止・最新／過去バッチの公平配送 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
+| 2.1-D2b-2b | 最新／過去runの3:1公平配送（ACK永続台帳） | **Agent PR #13マージ済み・合成CI合格** | [Agent PR #13](https://github.com/zawa356/RomRaider_agent/pull/13) |\n| 2.1-D2b-2c | 旧PoCのメモリqueue飽和の根本対策・欠損最小化 | **未着手** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-D2b-2b：製品Agentの最新・滞留run公平配送
+
+- [Agent PR #13](https://github.com/zawa356/RomRaider_agent/pull/13)をAgent mainに統合。SQLiteの成功ACK台帳で3回は最古run、4回目は最新runを選択し、再起動後も公平配送スロットを保持
+- [Windows/Linux spool CI](https://github.com/zawa356/RomRaider_agent/actions/runs/38361475995)で新FairDeliveryTest 19チェックと既存契約試験が成功。[合成Server E2E](https://github.com/zawa356/RomRaider_agent/actions/runs/38361475795)も成功
+- 未ACK／障害発生時には公平配送スロットを進めず、重複除去・profile待ち・バッチ確定ACKを変更しない
+- **残課題**：旧PoC Streamの200,000行メモリqueueが飽和した場合、取得済み原本を完全復元できない。欠損数の記録は既存実装にあるが根本的な飽和防止は未実装。Phase D2b-2cとして区別する
+- Windowsの実車X270 Zulu 8 32bit・電源断・disk-full試験、本番配備、走行中操作は実施していない
 
 ### 2026-10-13 — Phase 2.1-D2b-2a：旧TSVの不可逆欠損リスクを低減（Agent側）
 
