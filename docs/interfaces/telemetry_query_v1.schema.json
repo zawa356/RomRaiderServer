@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.invalid/romlogger/schemas/telemetry-query-v1.json",
   "title": "RomLogger MCP query_telemetry v1 tool schemas",
-  "description": "Top-level validates the query_telemetry tool INPUT. QueryOutput is defined separately in $defs/QueryOutput. Server MUST additionally enforce authorization, unit/definition validation, cursor signature and bounded AST complexity.",
+  "description": "Top-level validates the query_telemetry tool INPUT. QueryOutput is defined separately in $defs/QueryOutput. Server MUST additionally enforce authorization, per-run anchor validation, unit/definition validation, cursor signature and bounded AST complexity.",
   "$defs": {
     "ParamId": {
       "type": "string",
@@ -161,6 +161,9 @@
         },
         {
           "$ref": "#/$defs/Or"
+        },
+        {
+          "$ref": "#/$defs/IsPresent"
         }
       ]
     },
@@ -336,8 +339,28 @@
               "type": "null"
             }
           ]
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "anchor"
+            ]
+          },
+          "then": {
+            "properties": {
+              "cursor": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ],
+      "description": "A request may specify an anchor to seek before/after an arbitrary observation in its run, returning a batch of rows in one call. Use cursor (not anchor) for subsequent pages; anchor and non-null cursor together are invalid. Anchored requests use sequence ascending within the run regardless of time adjustments; supplied order must be sequence/asc or omitted."
     },
     "TelemetryRow": {
       "type": "object",
@@ -458,6 +481,44 @@
           "additionalProperties": true
         }
       }
+    },
+    "IsPresent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "op"
+      ],
+      "properties": {
+        "field": {
+          "$ref": "#/$defs/ParamId"
+        },
+        "op": {
+          "const": "is_present"
+        }
+      }
+    },
+    "Anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "relation"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "relation": {
+          "type": "string",
+          "enum": [
+            "after",
+            "before"
+          ]
+        }
+      },
+      "description": "Seek relative to this stored observation's run sequence. The anchor automatically restricts results to that run; it must belong to the authorized vehicle. The anchor is excluded. Use is_present to select actual observations for a parameter."
     }
   },
   "$ref": "#/$defs/QueryInput"
