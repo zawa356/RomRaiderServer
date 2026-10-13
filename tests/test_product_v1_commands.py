@@ -247,3 +247,19 @@ def test_claim_blocked_when_local_journal_needs_review(env):
     assert r.status_code==200
     assert r.json()["status"]=="action_required"
     assert claim(env).json()["status"]=="none"
+
+
+def test_older_reconciliation_cannot_displace_latest_state(env):
+    later=datetime.now(UTC)
+    first=reconcile(env,revision="most-recent",reported_at=later.isoformat())
+    assert first.status_code==200
+    older=reconcile(env,revision="stale-report",
+                    reported_at=(later-timedelta(minutes=2)).isoformat())
+    assert older.status_code==409
+    assert older.json()["error"]["code"]=="STALE_CLIENT_STATE"
+    with store.connect() as db:
+        revisions=[x["client_state_revision"] for x in db.execute("""
+            SELECT client_state_revision FROM v1_reconciliations
+            WHERE device_id=%s
+        """,(env["device"],)).fetchall()]
+    assert revisions==["most-recent"]
