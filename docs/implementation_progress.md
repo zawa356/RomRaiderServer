@@ -21,12 +21,21 @@
 | 1.1-B | デバイス資格情報の失効・更新と認証試験 | **完了（CI合格、PR #13）** | [PR #13](https://github.com/zawa356/RomRaiderServer/pull/13) |
 | 1.1-C | Agent能力スナップショット登録と整合性試験 | **完了（CI合格、PR #14）** | [PR #14](https://github.com/zawa356/RomRaiderServer/pull/14) |
 | 1.1-D | Agent操作のclaim／report／reconcileと保守的な期限管理 | **完了（PR #15・合成CI合格）** | [PR #15](https://github.com/zawa356/RomRaiderServer/pull/15) |
-| 1.2-A | DB障害・ACK喪失・並列再送の耐障害契約試験 | **合成CI合格・PR #16** | [PR #16](https://github.com/zawa356/RomRaiderServer/pull/16) |\n| 1.2-B | Agent v1 OpenAPI契約の機械検証と受信境界テスト | **合成CI合格・PR #17** | [PR #17](https://github.com/zawa356/RomRaiderServer/pull/17) |\n| 2.1-A | Windows Agent製品版SQLite spool・ACK管理（Linux/Windows合成CI） | **完了（実ECU・HTTP未接続）** | [Agent PR #3](https://github.com/zawa356/RomRaider_agent/pull/3)／[Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |\n| 2.1-B〜D | Server v1 HTTP送受信・RRBridge統合・実機耐久検証 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
+| 1.2-A | DB障害・ACK喪失・並列再送の耐障害契約試験 | **合成CI合格・PR #16** | [PR #16](https://github.com/zawa356/RomRaiderServer/pull/16) |\n| 1.2-B | Agent v1 OpenAPI契約の機械検証と受信境界テスト | **合成CI合格・PR #17** | [PR #17](https://github.com/zawa356/RomRaiderServer/pull/17) |\n| 2.1-A | Windows Agent製品版SQLite spool・ACK管理（Linux/Windows合成CI） | **完了（実ECU・HTTP未接続）** | [Agent PR #3](https://github.com/zawa356/RomRaider_agent/pull/3)／[Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |\n| 2.1-B | Agent側のServer v1 HTTPS/JSON送信・厳密ACK（契約モックCI） | **完了（本物のServer E2Eは未検証）** | [Agent PR #4](https://github.com/zawa356/RomRaider_agent/pull/4) |\n| 2.1-C〜D | 旧RRBridge統合・FastAPI/PostgreSQL E2E・Windows実機耐久試験 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-B：Agent製品v1のHTTP送信／厳密ACK（合成CI合格）
+
+- [Agent PR #4](https://github.com/zawa356/RomRaider_agent/pull/4)で、既存SQLite outboxへ独立したJava8 HTTP送信部品を追加。ProfileRevision先行PUT、同runバッチPOST、完全ACKのみをローカル確認済みにする
+- [Agent CI](https://github.com/zawa356/RomRaider_agent/actions/runs/38337837720)でWindows/Linuxそれぞれ**SQLite42件＋ローカルHTTP契約モック41件＝83件成功**。200/201 profile status対応、接続失敗、401/409/422/503、不正レスポンス、ACK喪失後の再起動・重複受信を試験
+- セキュリティ：リダイレクト追従無効、HTTPS必須（開発loopback HTTPのみ可）、Bearerのヘッダ出力禁止
+- **重要：本物のRomRaiderServer v1（PostgreSQL）へのend-to-endではない。** 既存RRBridgeのLogger callback組込、バックオフ、409/422隔離、Windows X270 Zulu8/実ECU動作はPhase 2.1-C/Dの対象
+- Agent側の詳細履歴：[実装進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md)、[送信IFの現状](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_http_transport.md)
+- Server本体API・DBにはこの作業で変更なし
 
 ### 2026-10-13 — Phase 2.1-A：車載AgentのローカルSQLite spool（合成CI合格）
 
