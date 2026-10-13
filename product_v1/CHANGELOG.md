@@ -2,6 +2,17 @@
 
 設計と実装の両方を追跡する。GitHub PRとCI結果、未着手の機能の正本は[実装進捗](../docs/implementation_progress.md)。
 
+## [2.1-D2a] Phase 2.1-D2a — incremental Agent/PostgreSQL E2E（2026-10-13）
+
+### Added
+- Agent main commit `668ad5230e7e3db4fc592311c857906f43802ad3` の本物のJava7ファイルをテスト専用の原本Git blob SHA検査付きpinへ更新
+- `IncrementalTsvBridge`で不完全行、再起動、追記、保存済みカーソルからの続き取得、3観測のServer送信と別SQLiteでの重複再送を使い捨てPostgreSQL16へ検証
+- [Agent test source PR #9](https://github.com/zawa356/RomRaider_agent/pull/9)、[Server PR #24](https://github.com/zawa356/RomRaiderServer/pull/24)
+
+### Verification
+- [実Java/PostgreSQL CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38349855164)：Agent原本SHA検査、Java8互換コンパイル、TSV途中行・再起動、3観測の送信／完全ACK／別SQLite再送とPostgreSQL直接検証がすべてPASS
+- [Server契約CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38349855179)と[旧PoC回帰CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38349855161)も全ジョブPASS。ECU実機、32bit Windows、旧Queue drop、常駐送信は未検証
+
 ## [2.1-C2a] Pinned Java Agent → real PostgreSQL E2E（2026-10-13）
 
 ### Added

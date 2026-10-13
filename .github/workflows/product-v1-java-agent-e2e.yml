@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   real-postgres:
-    name: Pinned Java 8 Agent -> FastAPI -> PostgreSQL 16
+    name: Pinned incremental Java 8 Agent -> FastAPI -> PostgreSQL 16
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -71,8 +71,8 @@ jobs:
         run: |
           cd tests/e2e/agent_v1_snapshot
           bash scripts/test-product-v1-real-server.sh
-          echo "### PASS: pinned Agent Java8 source → SQLite → FastAPI → PostgreSQL 16" >> "$GITHUB_STEP_SUMMARY"
-          echo "Agent source commit: 6dd46835a200d961d517f5bb54f11eb2d7bdd2af" >> "$GITHUB_STEP_SUMMARY"
+          echo "### PASS: pinned Agent incremental TSV → SQLite → FastAPI → PostgreSQL 16" >> "$GITHUB_STEP_SUMMARY"
+          echo "Agent source commit: 668ad5230e7e3db4fc592311c857906f43802ad3" >> "$GITHUB_STEP_SUMMARY"
       - name: Report failure without publishing token/logs
         if: failure()
         run: |
