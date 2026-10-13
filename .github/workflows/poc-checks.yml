@@ -42,7 +42,9 @@ jobs:
           done
           curl -fsS http://127.0.0.1:8080/health
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/mcp)" = '401'
-          curl -fsS -X POST http://127.0.0.1:8080/voice-demo/mcp \
+          # Caddy may be ready before the voice-demo process finishes startup.
+          # tools/list is read-only and safe to retry on transient 502/503.
+          curl --retry 12 --retry-delay 2 --retry-all-errors -fsS -X POST http://127.0.0.1:8080/voice-demo/mcp \
             -H 'Content-Type: application/json' \
             -H 'Accept: application/json, text/event-stream' \
             -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
