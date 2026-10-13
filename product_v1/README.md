@@ -21,6 +21,10 @@
 
 設計書: [Agent API wire v1](../docs/interfaces/server_agent_wire_v1.md)と[OpenAPI](../docs/interfaces/agent_api_v1.openapi.json)。**Phase 1.1-Dで通信契約上の7 APIのHTTP入口・基本的な業務処理を実装した。** ただしTask/Plan/Approvalの発行業務、車載の安全判定、実運用の操作配送、MCP、実ECU結合は未実装であり、配送フラグは初期無効。 結合テストのない機能を完成扱いしない。
 
+### Phase 1.2-B：通信仕様の自動契約試験
+
+コミット済みの[Agent v1 OpenAPI](../docs/interfaces/agent_api_v1.openapi.json)と実際のFastAPI定義をCIで比較し、7つの通信APIにパス・必須フィールド・列挙値の意図しない変更がないか確認する。認証済み実応答もJSON Schemaで検証する。**不正major版は426**、状態報告の品質検査違反は422を返す。今後の通信v1の変更はテストと仕様書を合わせて更新する。
+
 ### Phase 1.2-A：障害・再送に関する保証範囲
 
 - 接続が失敗した場合、またはDB commitを確認できない場合、端末へ`503 STORAGE_UNAVAILABLE`（再送可能）を返す。**成功ACKを受信していなければAgentはrecord IDを変えず保持・再送する**
