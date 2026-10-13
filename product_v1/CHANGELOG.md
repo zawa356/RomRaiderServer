@@ -2,7 +2,7 @@
 
 設計と実装の両方を追跡する。GitHub PRとCI結果、未着手の機能の正本は[実装進捗](../docs/implementation_progress.md)。
 
-## [Unreleased] Phase 1.1-D（2026-10-13）
+## [1.1-D] Phase 1.1-D（2026-10-13）
 
 ### Added
 - `0003_commands`で計測タスク・計画版・承認範囲・操作台帳・レポート履歴・再照合履歴を追加
@@ -17,7 +17,7 @@
 - 実行成功とされる`verified`はAgentの状態報告だけから取得。サーバー側で推定しない
 
 ### Verification
-- CI／PR確定後に記録。実車試験・実装済みAgentへの適用は未実施
+- [PR #15](https://github.com/zawa356/RomRaiderServer/pull/15)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38330361959)：**28件PASS**、Docker起動成功。 [PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38330362074)：2ジョブPASS。実車試験・実装済みAgentへの適用は未実施\n- 追加修正：承認取消／計画新版でのlease再取得拒否、不明ローカル台帳時のclaim拒否、過去reported_atの拒否、API本文上限
 
 ## [1.1-C] Phase 1.1-C（2026-10-13）\n\n### Added\n- Alembic `0002_capabilities`：不変なLogger/ECU Capability Snapshotとparameter availability索引\n- 端末認証付き`PUT /api/agent/v1/capability-snapshots/{snapshot_id}`の登録・再送冪等・衝突拒否\n- 保存時の能力状態`defined/possibly_supported/verified_readable/unsupported/unknown`の区別\n- Synthetic PostgreSQL結合試験（実ECUからの能力検出は未実施）\n\n### Verification\n- [PR #14](https://github.com/zawa356/RomRaiderServer/pull/14)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38329257391)：14件PASS、DB migration・Docker起動成功。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38329257275)も成功\n\n## [1.1-B] Phase 1.1-B（2026-10-13）\n\n### Added\n- `python -m product_v1.credentials status/rotate/revoke --device-id ...` ローカル管理CLI\n- トークンの即時差替え、恒久失効と二重失効の冪等処理\n- 実DB＋FastAPIによる資格情報ライフサイクル試験\n\n### Security\n- ローテーション後の旧トークンをAPI認証に使用不可とする。生トークンはDB保存しない\n- 他Deviceのトークンや過去のTelemetry原本に影響しない\n- 本番MCPに資格情報管理操作は公開しない\n\n### Verification\n- [PR #13](https://github.com/zawa356/RomRaiderServer/pull/13)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824590)：**11件PASS**、Dockerスモーク成功。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824542)成功\n\n## [1.1-A] Phase 1.1-A（2026-10-13）
 
