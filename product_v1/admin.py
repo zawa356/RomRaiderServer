@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--vehicle-id", type=UUID, help="Existing vehicle id (otherwise new)")
     parser.add_argument("--display-name", default="RomLogger test vehicle")
     args = parser.parse_args()
-    store.init_schema()
+    store.require_schema()
     vehicle_id = args.vehicle_id or uuid4()
     device_id = uuid4()
     # Never save the plaintext device secret to PostgreSQL.

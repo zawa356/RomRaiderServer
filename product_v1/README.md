@@ -34,6 +34,22 @@ curl -fsS http://127.0.0.1:18083/health
 
 PoCの`api`、`mcp`、`proxy`はこのCompose起動で置き換わらない。`api-v1`のホスト公開は`127.0.0.1:18083`に限定。外部公開用のTLS／OAuthなどは今後追加し、**途中段階で車両データをインターネット公開しない**。
 
+### DBの明示的マイグレーション
+
+`compose.product-v1.yaml`には`product-v1-migrate`サービスがあり、DBがhealthyになったらAlembicで`0001_initial`へupgradeします。**この処理が完了するまで`api-v1`は起動しません**。APIや登録CLIがアクセス時にCREATE TABLEすることはありません。
+
+```bash
+docker compose -f compose.yaml -f compose.product-v1.yaml run --rm product-v1-migrate
+docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 python -m product_v1.migrate check
+```
+
+- 既存PoCと製品のDB表は名前空間を分離。`v1_alembic_version`のみ製品版のmigration履歴を表現します。
+- 旧製品版試験コードが作った**未管理v1テーブルがすでに存在する場合、初期マイグレーションは安全側で失敗**します。現時点では自動stampしません。運用対象がある場合、データの保全と既存スキーマ検証を行う別手順を設計してから移行してください。
+- `0001_initial`と`schema.sql`は初期ベースラインとして**編集禁止**。将来の変更は次の新規Alembic revisionで行います。
+- 自動downgradeによる原本破棄を防ぐため、ダウングレードコマンドは提供していません。
+
+変更履歴：[Product v1 CHANGELOG](CHANGELOG.md)／[実装進捗管理](../docs/implementation_progress.md)。
+
 ## 2. デバイス登録
 
 ```bash
@@ -67,4 +83,4 @@ docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
 
 - Phase 1のさらに必要な範囲: 7 APIの残り（capability、commands、reconcile）はAgent工程で接続。HTTPエラー契約の詳細統一、MCP向けの行・列・anchor検索は別工程。マイグレーションを明示的なAlembic管理に変更。
 - Agentの独立スプールと再送、実車・K-Line計測は今後の工程。実走行中のプロファイル変更は安全検証まで無効。
-- 現時点では`init_schema()`の冪等DDLを使用。**本番アップグレード手順の代替とはしない**。本番配備前にDBマイグレーション管理を追加する。
+- Alembicによる初期版管理は実装済み。ただし**既に無管理で作られたv1テーブルの移行と、本番環境での可逆移行運用は未整備**。未管理のDBへ無条件stampしない。

@@ -2,7 +2,6 @@
 import hashlib
 import json
 import os
-from pathlib import Path
 from uuid import UUID
 
 import psycopg
@@ -21,13 +20,21 @@ def connect():
     return psycopg.connect(os.environ["DATABASE_URL"], row_factory=dict_row)
 
 
-def init_schema():
-    """Isolated v1 DDL, idempotent during early development (migrations follow)."""
-    statements = Path(__file__).with_name("schema.sql").read_text(encoding="utf-8").split(";")
+def require_schema():
+    """Read-only startup check. Migrations are a separate, explicit operation."""
     with connect() as db:
-        for statement in statements:
-            if statement.strip():
-                db.execute(statement)
+        try:
+            row = db.execute(
+                "SELECT version_num FROM v1_alembic_version"
+            ).fetchone()
+        except psycopg.errors.UndefinedTable as exc:
+            raise RuntimeError(
+                "Product v1 schema is not migrated; run python -m product_v1.migrate upgrade"
+            ) from exc
+    if row is None or row["version_num"] != "0001_initial":
+        raise RuntimeError(
+            "Incompatible product-v1 schema version; migrate before starting the API"
+        )
 
 
 def normalized(obj) -> bytes:

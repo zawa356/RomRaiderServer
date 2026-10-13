@@ -130,7 +130,7 @@ class DeviceStatus(StrictModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    store.init_schema()
+    store.require_schema()
     yield
 
 
