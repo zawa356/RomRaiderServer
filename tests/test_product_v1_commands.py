@@ -204,3 +204,31 @@ def test_parallel_claims_share_one_command_id(env):
     with store.connect() as db:
         assert db.execute("""SELECT status FROM v1_command_requests
             WHERE command_id=%s""",(env["command"],)).fetchone()["status"]=="leased"
+
+
+def test_revoked_lease_never_returned_again(env):
+    env["monkeypatch"].setenv("ROMLOGGER_ENABLE_COMMAND_CLAIM","true")
+    reconcile(env)
+    assert claim(env).json()["status"]=="leased"
+    with store.connect() as db:
+        db.execute("UPDATE v1_approval_scopes SET revoked_at=now() WHERE approval_scope_id=%s",
+                   (env["approval"],))
+    assert claim(env).json()["status"]=="none"
+    with store.connect() as db:
+        assert db.execute("SELECT status FROM v1_command_requests WHERE command_id=%s",
+                          (env["command"],)).fetchone()["status"]=="unknown"
+    assert reconcile(env,revision="rev-revoked").json()["status"]=="action_required"
+
+
+def test_unapproved_action_is_not_delivered(env):
+    env["monkeypatch"].setenv("ROMLOGGER_ENABLE_COMMAND_CLAIM","true")
+    reconcile(env)
+    with store.connect() as db:
+        db.execute("""UPDATE v1_command_requests
+            SET action='apply_measurement_plan' WHERE command_id=%s""",
+                   (env["command"],))
+        db.execute("""UPDATE v1_approval_scopes
+            SET allowed_actions=ARRAY['apply_measurement_plan']::text[]
+            WHERE approval_scope_id=%s""",(env["approval"],))
+    # Even an approved plan cannot bypass the dedicated on-car safety phase.
+    assert claim(env).json()["status"]=="none"
