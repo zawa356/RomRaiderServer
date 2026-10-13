@@ -2,6 +2,18 @@
 
 設計と実装の両方を追跡する。GitHub PRとCI結果、未着手の機能の正本は[実装進捗](../docs/implementation_progress.md)。
 
+## [2.1-C2a] Pinned Java Agent → real PostgreSQL E2E（2026-10-13）
+
+### Added
+- Private Server CIへAgent Java実ソース（commit `6dd46835...`）のテスト専用、SHA証明付きpinを追加。製品runtimeには含めない
+- Ubuntu ActionsのPostgreSQL16サービスと実FastAPIを使い、AgentのSQLite/HTTP/ACK経路の合成E2Eをテスト
+- Profile登録・2件一括commit・同一原本の別SQLiteからの冪等再送・DB生行数／synthetic出所を検証
+
+### Verification
+- [初回PASS GitHub Actions](https://github.com/zawa356/RomRaiderServer/actions/runs/38346035656) ：Agent fixture SHA／Java8互換コンパイル／実Server E2E／DB照合すべて成功
+- Agentの最新版自動追従、Windows X270実ECU・電源断・HTTP外部TLS／LLM/MCPは未検証。旧PoCのデータ欠損問題は未解決
+- [Pinned fixture運用書](../tests/e2e/agent_v1_snapshot/README.md)
+
 ## [1.2-B] Phase 1.2-B（2026-10-13）
 
 ### Added

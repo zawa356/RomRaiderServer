@@ -26,13 +26,23 @@
 | 2.1-A | Windows Agent製品版SQLite spool・ACK管理（Linux/Windows合成CI） | **完了（実ECU・HTTP未接続）** | [Agent PR #3](https://github.com/zawa356/RomRaider_agent/pull/3)／[Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-B | Agent側のServer v1 HTTPS/JSON送信・厳密ACK（契約モックCI） | **完了（本物のServer E2Eは未検証）** | [Agent PR #4](https://github.com/zawa356/RomRaider_agent/pull/4) |
 | 2.1-C1 | 旧RRBridge TSV→製品SQLiteを読み取り専用に取り込む合成検証 | **完了（実車未接続）** | [Agent PR #5](https://github.com/zawa356/RomRaider_agent/pull/5) |
-| 2.1-C2 | Agent→実FastAPI→PostgreSQL E2E／常駐取り込み | **E2Eコード完成・Private Repo CI認証未設定でNOT RUN** | [Agent E2E手順](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_integration.md) |
+| 2.1-C2a | **pinした実Agent Java→実FastAPI→PostgreSQLの合成E2E** | **PASS（Agent commit 6dd46835固定／実ECU未確認）** | [E2E CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38346035656) |
+| 2.1-C2b | Agent最新main自動同期・継続E2E／既存RRBridge常駐統合 | 未着手（Agent側のPrivate token付きE2EはNOT RUN） | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 2.1-D | Windows実機耐久、既存PoCのキュー欠損対策、永続オフセット等 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-C2a：実Java Agent→実FastAPI/PostgreSQL E2Eが初めて成功
+
+- Private間認証なしで実結合をCI実行するため、Agent **commit `6dd46835a200d961d517f5bb54f11eb2d7bdd2af`** の実Javaソース5ファイル＋E2EスクリプトをServerの**テスト専用スナップショット**へGit blob SHAと共に固定。原本とコピーのblob一致確認。試験前に各ファイルのSHAを再検査
+- [新E2E GitHub Actions](https://github.com/zawa356/RomRaiderServer/actions/runs/38346035656)：`javac --release 8`、使い捨てPostgreSQL 16＋実FastAPI＋端末認証、旧RRBridge合成TSVからSQLite→ProfileRevision PUT→観測2件POST→受領ACK、**別SQLiteから同じ原本UUIDで再送**
+- Server DBを直接SELECTし、**`v1_records=2`／`v1_profile_revisions=1`／`source_kind=synthetic`で成功**。HTTP契約モックではなく、本物のJavaコード・Server API・Postgresに対する合成E2E成功
+- [試験コードと固定版・追従手順](../tests/e2e/agent_v1_snapshot/README.md)。Agentの現在／将来の`main`に自動追従するわけではないため、最新版E2E成功とは記載しない。Agentリポジトリ側のPrivate相互読取token未設定のE2Eは引き続きNOT RUN
+- **未検証**：ECU実機→Logger callback→TSV、X270 Windows/Zulu8 32-bit、常駐自動取り込み、長距離ログ、旧Queue drop/TSV削除・欠損対策、物理電源断、公開TLS接続、MCP/操作制御
+- 本番デプロイや車載Profile自動変更は一切追加していない
 
 ### 2026-10-13 — Phase 2.1-C1 main CIのWindows Maven403回復
 
