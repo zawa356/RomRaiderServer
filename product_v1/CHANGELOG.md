@@ -2,7 +2,7 @@
 
 設計と実装の両方を追跡する。GitHub PRとCI結果、未着手の機能の正本は[実装進捗](../docs/implementation_progress.md)。
 
-## [Unreleased] Phase 1.1-A（2026-10-13）
+## [1.1-A] Phase 1.1-A（2026-10-13）
 
 ### Added
 - Alembicの`0001_initial`として製品用PostgreSQL schemaを管理
@@ -19,7 +19,7 @@
 - 原本削除の危険がある自動downgradeは禁止
 
 ### Verification
-- この変更履歴の作成時点はCI未完了。合格後にCI実行URLを追記
+- [PR #12](https://github.com/zawa356/RomRaiderServer/pull/12)／[Product v1 CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328488513)：9テスト合格、Migration 2回、Docker起動・CLI動作合格\n- [Legacy PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328488536)：supervisor／Compose・MCP全ジョブ成功
 
 ## [1.0.0-initial] Phase 1.0（2026-10-13）
 
