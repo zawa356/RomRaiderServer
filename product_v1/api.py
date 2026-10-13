@@ -237,8 +237,14 @@ def error_response(request: Request, status: int, code: str, message: str,
 @app.middleware("http")
 async def request_guard(request: Request, call_next):
     request.state.request_id = str(uuid4())
-    if request.url.path == "/api/agent/v1/telemetry/batches":
-        max_bytes = 512 * 1024
+    path = request.url.path
+    max_bytes = (
+        512 * 1024 if path == "/api/agent/v1/telemetry/batches"
+        else 64 * 1024 if path == "/api/agent/v1/reconcile"
+        else 16 * 1024 if path.startswith("/api/agent/v1/commands/")
+        else None
+    )
+    if max_bytes is not None:
         # A bounded body check is required even when Content-Length is omitted.
         size = request.headers.get("content-length")
         if size is not None:
