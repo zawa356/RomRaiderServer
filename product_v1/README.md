@@ -83,7 +83,22 @@ docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
 - 削除／更新により過去の観測原本・ProfileRevision・Runの記録は消去されない
 - このCLIはデバイス管理の最小機能。ユーザーによる包括承認・MCP認証などは別の機能
 
-## 3. API呼出し順序
+## 3. Phase 1.1-D 操作配送・レポート・再同期
+
+本フェーズは**操作の記録と端末発信の通信契約**のみを実装します。車載プロファイル変更・ECU書込み、AIの独立した承認判断／Task発行機能は実装しません。
+
+- `POST /api/agent/v1/reconcile`：端末実状態revision・最後の操作IDを監査記録として受信し、`aligned/action_required/unknown`とServer上の計画版を返す。**これによって車載操作を勝手に実行しない**
+- `POST /api/agent/v1/commands/claim`：有効なタスク・計画版・包括承認・資格情報・直近reconcileを確認し、最大1件をlease（Server受付≠実車成功）
+- `POST /api/agent/v1/commands/{command_id}/report`：不変なreport IDにより状態履歴を追記。同一報告は冪等、別内容は409、状態逆行は409
+- デフォルトでは操作配送を禁止。システムテスト以外での`ROMLOGGER_ENABLE_COMMAND_CLAIM=true`は、Agentの実行台帳・安全ゲートを実装する後続フェーズまで設定しない
+- 有効化しても初版は`suspend_ai_changes`のみ配信許可（安全側へ変更するための制御通知）。`apply_measurement_plan`、`restore_basic_logging`、`request_local_recovery`は配信対象外
+- 計測計画・承認スコープの生成は、この段階では本番REST/MCP/CLIに公開していない。**CIが直接作る合成fixtureだけ**で通信の整合性を確認する
+- leaseが期限切れ、または承認が撤回された場合、実行済みの可能性があるため`unknown`へ移し再配送しない。ローカル実行台帳との照合が必要
+- 未完了の操作／状態不明／ローカル履歴の存在は、Server側が自動再試行せず`action_required`へ。運転中の手動操作も要求しない
+
+詳細は[通信契約](../docs/interfaces/server_agent_wire_v1.md)、[実装進捗](../docs/implementation_progress.md)を参照。
+
+## 4. API呼出し順序
 
 1. `PUT /api/agent/v1/capability-snapshots/{snapshot_id}` に、ECU/Loggerの項目能力を不変Snapshotとして登録（定義上の候補と実取得済みを区別）。\n2. `PUT /api/agent/v1/profile-revisions/{profile_revision_id}` に、車両・端末ID、Logger fingerprint、項目定義を登録。
 3. `POST /api/agent/v1/telemetry/batches` に、1 run単位の観測・イベント・gapレコードを送信。原本の`record_id`は再送でも変更しない。
