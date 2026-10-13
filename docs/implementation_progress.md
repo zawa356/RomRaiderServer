@@ -313,3 +313,8 @@
 - Agent journal PR CI38407692420とspool CI38407690527は両OS実ステップsuccess。証跡文書追加後の最新SHA CIは確認中。Agent既存writerのWindows live read BLOCKEDは継続。今回実PostgreSQL E2EはNOT RUN。
 - VPS引継ぎとの差: 提供SSHユーザーcodexを利用、新規/home/codex/git/romlogger-codex-4b2d2b-agentで検証、Gitはlocal ghでpush。資格情報をVPSへ転送せずGit bundleで同期。
 - PoC→運用、同一JVM別handle統合、quota変更、lockファイル置換/削除は保留。watermark独立PoCが次工程。
+
+#### 2026-10-13 22:52 JST — 2b-1統合証跡
+
+- Agent PR #27 merged、main 60ae43cb366e2d2141905526af3675f0ceb0a759。最新PR76889a6のjournal CI38407931755とspool CI38407931735はWindows/Linuxの実試験/全job success。
+- Agent main journal CI38408152381両OS job/実ステップsuccess、main spool CI38408153111両OS試験success（Windows job完了待ち）。後続watermarkはこのCIの最終完了を確認して分岐する。
