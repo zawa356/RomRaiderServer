@@ -76,11 +76,37 @@ def claim(device, body):
             UPDATE v1_command_requests SET status='unknown',updated_at=now()
             WHERE device_id=%s AND status='leased' AND lease_until<=now()
         """, (device["device_id"],))
+        # Revocation, expiration and plan supersession also invalidate a
+        # previously leased command. Invalidate its delivery state as UNKNOWN
+        # (not QUEUED): the Agent may already have started the action.
+        db.execute("""
+            UPDATE v1_command_requests c SET status='unknown',updated_at=now()
+            WHERE c.device_id=%s AND c.status='leased' AND (
+                c.expires_at<=now() OR NOT EXISTS (
+                    SELECT 1 FROM v1_tasks t
+                    JOIN v1_plan_revisions p ON p.task_id=t.task_id
+                    JOIN v1_approval_scopes a ON a.task_id=t.task_id
+                    WHERE t.task_id=c.task_id AND t.state='active'
+                      AND t.vehicle_id=c.vehicle_id
+                      AND p.plan_revision_id=c.plan_revision_id
+                      AND a.approval_scope_id=c.approval_scope_id
+                      AND a.revoked_at IS NULL
+                      AND a.starts_at<=now() AND a.expires_at>now()
+                      AND c.action=ANY(a.allowed_actions)
+                      AND NOT EXISTS (
+                        SELECT 1 FROM v1_plan_revisions newer
+                        WHERE newer.task_id=t.task_id
+                          AND newer.revision_number>p.revision_number
+                      )
+                )
+            )
+        """,(device["device_id"],))
         outstanding = db.execute("""
             SELECT * FROM v1_command_requests WHERE device_id=%s
               AND status='leased' AND lease_until>now()
+              AND plan_revision_id=%s
             ORDER BY issued_at,command_id LIMIT 1 FOR UPDATE
-        """, (device["device_id"],)).fetchone()
+        """, (device["device_id"],body.get("current_plan_revision_id"))).fetchone()
         if outstanding:
             # Re-claim returns the same ID, but the Agent must use its local
             # execution journal and MUST NOT interpret this as a new operation.
