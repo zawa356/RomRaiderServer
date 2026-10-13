@@ -40,6 +40,12 @@
 
 ## 変更履歴
 
+### 2026-10-13 — チャット上限に伴う引継ぎ正本
+
+- [詳細引継ぎ（このチャットの作業・現在のmain・両repo・合成CI・未実施E2E・次Phase）](handoff/2026-10-13_chat_handoff.md)を追加。**開発コードや仕様を変更する作業ではない**
+- 引継ぎスナップショットのServer/Agent main SHAは作成時点のもの。新チャットでは必ずGitHubで最新を検証する
+- 特にAgentの「E2E success表示だが実テストstep=skipped」と固定pin版の本物のE2E successを混同しない
+
 ### 2026-10-13 — Phase 2.1-D2b-2b：製品Agentの最新・滞留run公平配送
 
 - [Agent PR #13](https://github.com/zawa356/RomRaider_agent/pull/13)をAgent mainに統合。SQLiteの成功ACK台帳で3回は最古run、4回目は最新runを選択し、再起動後も公平配送スロットを保持
