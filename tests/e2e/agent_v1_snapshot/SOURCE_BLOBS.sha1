@@ -1,9 +1,10 @@
 # Git blob hashes, relative to this directory; validate with git hash-object.
-# Pinned source: zawa356/RomRaider_agent@6dd46835a200d961d517f5bb54f11eb2d7bdd2af
+# Pinned source: zawa356/RomRaider_agent@668ad5230e7e3db4fc592311c857906f43802ad3
 # Never package or deploy this test-only snapshot.
-1d24ebbb27b0a70f60b13ae26f861373e8ae8c34  src/main/java/net/neristal/rrbridge/product/v1/DurableSpool.java
+3af3d6c86ec70a53c6b01cb64e99ae73a419985a  src/main/java/net/neristal/rrbridge/product/v1/DurableSpool.java
 69704d1da1c8192587abfbf4f6835d56eb0ac942  src/main/java/net/neristal/rrbridge/product/v1/AgentWire.java
 959c5e3b31369f5a89c03b76975d9ef80d0da1de  src/main/java/net/neristal/rrbridge/product/v1/ProductSender.java
 6bc035e9932b917a5b29f5c3c7663f72425f537d  src/main/java/net/neristal/rrbridge/product/v1/LegacyTsvBridge.java
-a26799211b1395a0dff3e982714b80f2e8b6a824  src/test/java/net/neristal/rrbridge/product/v1/ProductServerE2E.java
-07ecc318650c42ef30c858533d9abb28dd73fe9a  scripts/test-product-v1-real-server.sh
+157beb1a89918db2890d3045b56f65d3aed131c2  src/main/java/net/neristal/rrbridge/product/v1/IncrementalTsvBridge.java
+b342262d2bcf6091c13b5296574b197ffff8db74  src/test/java/net/neristal/rrbridge/product/v1/ProductServerE2E.java
+18e8786533d7ad54fdb2eed5ea034cb76e7f26d5  scripts/test-product-v1-real-server.sh
