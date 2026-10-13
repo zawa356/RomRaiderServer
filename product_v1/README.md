@@ -19,7 +19,7 @@
 | Windows RRBridgeと実ECU結合 | **未実装・未検証**。Phase 2–3 |
 | AI計測操作・Supervisor・走行中切替 | **未実装・未検証**。安全確認前に有効化しない |
 
-設計書: [Agent API wire v1](../docs/interfaces/server_agent_wire_v1.md)と[OpenAPI](../docs/interfaces/agent_api_v1.openapi.json)。**Phase 1.1-Cでは7 APIのうち定義登録／バッチ受信／状態報告／能力Snapshot登録の4種類まで実装している。** 結合テストのない機能を完成扱いしない。
+設計書: [Agent API wire v1](../docs/interfaces/server_agent_wire_v1.md)と[OpenAPI](../docs/interfaces/agent_api_v1.openapi.json)。**Phase 1.1-Dで通信契約上の7 APIのHTTP入口・基本的な業務処理を実装した。** ただしTask/Plan/Approvalの発行業務、車載の安全判定、実運用の操作配送、MCP、実ECU結合は未実装であり、配送フラグは初期無効。 結合テストのない機能を完成扱いしない。
 
 ## 1. 合成データのみでローカル起動
 
@@ -120,6 +120,6 @@ docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
 
 ## 5. 未完了と次の実装
 
-- Phase 1のさらに必要な範囲: 7 APIの残り（capability、commands、reconcile）はAgent工程で接続。HTTPエラー契約の詳細統一、MCP向けの行・列・anchor検索は別工程。マイグレーションを明示的なAlembic管理に変更。
+- Phase 1の今後の範囲: Task/Plan/Approvalの正式な業務ロジック・承認操作・監査、制約の追加検証、MCP向けの行・列・anchor検索は別工程。7 Agent APIの**基本HTTP入口は実装済み**だが本番操作経路は未解禁。DB版管理はAlembicで実施。
 - Agentの独立スプールと再送、実車・K-Line計測は今後の工程。実走行中のプロファイル変更は安全検証まで無効。
 - Alembicによる初期版管理は実装済み。ただし**既に無管理で作られたv1テーブルの移行と、本番環境での可逆移行運用は未整備**。未管理のDBへ無条件stampしない。
