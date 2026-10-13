@@ -2,7 +2,7 @@
 
 設計と実装の両方を追跡する。GitHub PRとCI結果、未着手の機能の正本は[実装進捗](../docs/implementation_progress.md)。
 
-## [1.1-A] Phase 1.1-A（2026-10-13）
+## [Unreleased] Phase 1.1-B（2026-10-13）\n\n### Added\n- `python -m product_v1.credentials status/rotate/revoke --device-id ...` ローカル管理CLI\n- トークンの即時差替え、恒久失効と二重失効の冪等処理\n- 実DB＋FastAPIによる資格情報ライフサイクル試験\n\n### Security\n- ローテーション後の旧トークンをAPI認証に使用不可とする。生トークンはDB保存しない\n- 他Deviceのトークンや過去のTelemetry原本に影響しない\n- 本番MCPに資格情報管理操作は公開しない\n\n### Verification\n- CI結果・PR番号は実行完了後追記\n\n## [1.1-A] Phase 1.1-A（2026-10-13）
 
 ### Added
 - Alembicの`0001_initial`として製品用PostgreSQL schemaを管理
