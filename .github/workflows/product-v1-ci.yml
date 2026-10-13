@@ -75,4 +75,8 @@ jobs:
         env:
           POSTGRES_PASSWORD: ci_only_disposable_password
           DATABASE_URL: postgresql://romlogger:ci_only_disposable_password@db:5432/romlogger_ci
-        run: docker compose -f compose.yaml -f compose.product-v1.yaml config -q
+        run: |
+          # Compose requires an env_file on disk even when variables are also exported.
+          # This file is temporary, non-sensitive and exists only on the disposable CI runner.
+          cp .env.example .env
+          docker compose -f compose.yaml -f compose.product-v1.yaml config -q
