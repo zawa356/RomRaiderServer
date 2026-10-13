@@ -178,3 +178,15 @@ def test_batch_size_limit_and_structured_errors(ctx):
     assert invalid.status_code==422,invalid.text
     assert invalid.json()["error"]["code"]=="INVALID_REQUEST"
     assert invalid.json()["request_id"]
+
+
+def test_schema_is_explicitly_migrated_without_legacy_poc_ddl(ctx):
+    from alembic.script import ScriptDirectory
+    from product_v1.migrate import config
+    expected = ScriptDirectory.from_config(config()).get_current_head()
+    with store.connect() as db:
+        row = db.execute("SELECT version_num FROM v1_alembic_version").fetchone()
+        assert row["version_num"] == expected == "0001_initial"
+        # The new product migration must not bootstrap the legacy PoC schema.
+        assert db.execute("SELECT to_regclass('public.samples') AS legacy").fetchone()["legacy"] is None
+        assert db.execute("SELECT to_regclass('public.v1_records') AS product").fetchone()["product"]
