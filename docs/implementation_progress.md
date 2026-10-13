@@ -36,13 +36,24 @@
 | 2.1-D2b-2c-1 | S行優先制限によりM/E行へqueue 4096枠を予約 | **Agent PR #15・合成CI合格** | [Agent PR #15](https://github.com/zawa356/RomRaider_agent/pull/15) |
 | 2.1-D2b-2c-2 | 旧TSV writerの64KiB分割書込・IOException/RuntimeException後のrollback | **Agent PR #16・合成CI合格** | [Agent PR #16](https://github.com/zawa356/RomRaider_agent/pull/16) |
 | 2.1-D2b-2c-3 | writer未fsync待機行・障害状態の観測、queue飽和後の回復試験 | **Agent PR #17マージ・44チェック合成CI合格** | [Agent PR #17](https://github.com/zawa356/RomRaider_agent/pull/17) |
-| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：2c-1〜2c-3は限定的な欠損軽減・可視化のみ** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-4a | 永続入口ジャーナル独立PoC（fsync/CRC/seq/quota/異常終了） | **Agent PR #18・Windows/Linux 34チェック合成CI PASS、製品接続なし** | [Agent PR #18](https://github.com/zawa356/RomRaider_agent/pull/18) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：2c-4aは製品未接続PoC、無欠損保証なし** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Agent D2b-2c-4a：独立ジャーナルの障害復旧PoC（製品未接続）
+
+- [Agent PR #18](https://github.com/zawa356/RomRaider_agent/pull/18) をmainへ統合（Agent merge SHA `115e5e7d0f9b9b69a08d957769b597ee96b56f7a`）。新しい`prototype.ingress.IngressJournalPrototype`は旧PoC `Stream.java`・製品SQLite outbox・Server側コードとは**未接続**。
+- Java8互換でlength/sequence/CRC32付き原文フレーム、レコード単位fsync、OS file lock、quota fail closed、原本無断削除禁止を設計。別JVMがfsync直後に`Runtime.halt(73)`で終了しても再起動後に受領行を再読込できた。
+- CloudPCの隔離cloneで34チェックPASS、[Agent PR CI #38374125596](https://github.com/zawa356/RomRaider_agent/actions/runs/38374125596) Ubuntu/Windows両方の実試験ステップPASS。詳細は[Agent設計・検証文書](https://github.com/zawa356/RomRaider_agent/blob/main/docs/phase_2_1_d2b_2c_4a_ingress_journal_prototype.md)。
+- **未解決**：fsyncはECU callbackへ直接呼べないため、実際のqueueからの受け渡し・容量上限時の運用停止・既存SQLite outboxとのACK/原本管理・異常終了後のカーソル設計が未実装。物理電源断、X270/Zulu8 32bit、disk-full、実車及び最新Agent→実Server E2Eは未検証。**原本無欠損／製品版対応済みと判断しない**。
+- このServerリポジトリへの反映は進捗台帳の同期のみ。Caddy/MCP・Serverコード・DB・本番デプロイに変更はない。
+
+
 
 ### 2026-10-13 — Agent Phase 2.1-D2b-2c-3：書込障害・volatile backlog可視化と飽和復旧試験
 
