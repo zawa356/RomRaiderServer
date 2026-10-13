@@ -17,7 +17,7 @@
 | --- | --- | --- | --- |
 | 1.0 | 製品版Server初期受信、原子的ACK、認証、合成データ試験 | **完了（CI確認済み／実車未確認）** | [PR #5](https://github.com/zawa356/RomRaiderServer/pull/5) |
 | 1.0-R | PoC同時起動のDB初期化競合修正 | **完了（CI確認済み）** | [PR #11](https://github.com/zawa356/RomRaiderServer/pull/11) |
-| 1.1-A | Alembic導入・DB版管理・移行を独立工程化 | **実装・CI確認中** | [Issue #6](https://github.com/zawa356/RomRaiderServer/issues/6) |
+| 1.1-A | Alembic導入・DB版管理・移行を独立工程化 | **完了（CI合格、PR #12）** | [Issue #6](https://github.com/zawa356/RomRaiderServer/issues/6) |
 | 1.1-B | デバイス資格情報の失効・更新と認証試験 | 未着手 | Issue #6 |
 | 1.1-C | Agent能力スナップショット登録と整合性試験 | 未着手 | Issue #6 |
 | 1.1-D | Agent操作／再照合IF（車載操作なし）、耐障害試験 | 未着手 | Issue #6 |
@@ -36,7 +36,7 @@
 - GitHub Actionsで実DBへのupgrade（2回実行による冪等確認）、version check、既存契約試験を実施
 - 未管理の製品版テーブルがすでに存在するDBへは**安全のため自動stampしない**。運用移行には別の検証付き移行手順を要する
 - 今回の初期MigrationはデータをDELETE/DROPしない。**downward migrationは自動実行不可**
-- [関連PRは作業完了時追記する]。**テスト合格前は「完了」に変更しない**
+- [PR #12](https://github.com/zawa356/RomRaiderServer/pull/12)。[Product CI実行結果](https://github.com/zawa356/RomRaiderServer/actions/runs/38328488513)：PostgreSQL試験**9件PASS**、migration 2回・version照合、Dockerビルド・起動・登録成功。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328488536)も成功
 
 ### 2026-10-13 — Phase 1.0：Server受信基盤
 
