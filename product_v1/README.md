@@ -21,6 +21,13 @@
 
 設計書: [Agent API wire v1](../docs/interfaces/server_agent_wire_v1.md)と[OpenAPI](../docs/interfaces/agent_api_v1.openapi.json)。**Phase 1.1-Dで通信契約上の7 APIのHTTP入口・基本的な業務処理を実装した。** ただしTask/Plan/Approvalの発行業務、車載の安全判定、実運用の操作配送、MCP、実ECU結合は未実装であり、配送フラグは初期無効。 結合テストのない機能を完成扱いしない。
 
+### Phase 1.2-A：障害・再送に関する保証範囲
+
+- 接続が失敗した場合、またはDB commitを確認できない場合、端末へ`503 STORAGE_UNAVAILABLE`（再送可能）を返す。**成功ACKを受信していなければAgentはrecord IDを変えず保持・再送する**
+- 成功commit後にHTTP応答だけ喪失したときは、再送で全件`duplicate_count`として返る。複数Agentの同一payload並列再送でもDB原本は1件へ収束する
+- PostgreSQLが途中でトランザクション失敗を返した場合は、部分書込・取込連番・値検索射影もrollbackする
+- 今回の実装ではAgentのディスク永続化や通信断中の連続ロギングは試験していない。Windows Agent Phase 2で別途検証する
+
 ## 1. 合成データのみでローカル起動
 
 本実装は最初のCIとサーバー基盤の受け皿検証用。車載端末や実ECUには接続しない。
