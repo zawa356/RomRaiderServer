@@ -14,12 +14,12 @@
 | 原本JSONB＋パラメーター値索引テーブル | 実装 |
 | `POST /api/agent/v1/status` | 最小実装 |
 | `GET /api/agent/v1/telemetry/recent` | **Phase 1の認証付き診断専用**。公開MCPではない |
-| Agent端末・車両登録 | 最小CLI |
+| Agent端末・車両登録 | 最小CLI |\n| ECU/Logger能力スナップショットの登録 | 実装：不変SnapshotをPostgreSQLへ保存。実ECU自動発見は車載側の後続工程 |
 | MCP認証／柔軟な生データ検索 | **未実装**。Phase 4で実装 |
 | Windows RRBridgeと実ECU結合 | **未実装・未検証**。Phase 2–3 |
 | AI計測操作・Supervisor・走行中切替 | **未実装・未検証**。安全確認前に有効化しない |
 
-設計書: [Agent API wire v1](../docs/interfaces/server_agent_wire_v1.md)と[OpenAPI](../docs/interfaces/agent_api_v1.openapi.json)。**Phase 1では7 APIのうち定義登録／バッチ受信／状態報告の3種類から実装している。** 結合テストのない機能を完成扱いしない。
+設計書: [Agent API wire v1](../docs/interfaces/server_agent_wire_v1.md)と[OpenAPI](../docs/interfaces/agent_api_v1.openapi.json)。**Phase 1.1-Cでは7 APIのうち定義登録／バッチ受信／状態報告／能力Snapshot登録の4種類まで実装している。** 結合テストのない機能を完成扱いしない。
 
 ## 1. 合成データのみでローカル起動
 
@@ -85,11 +85,11 @@ docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
 
 ## 3. API呼出し順序
 
-1. `PUT /api/agent/v1/profile-revisions/{profile_revision_id}` に、車両・端末ID、Logger fingerprint、項目定義を登録。
-2. `POST /api/agent/v1/telemetry/batches` に、1 run単位の観測・イベント・gapレコードを送信。原本の`record_id`は再送でも変更しない。
-3. Serverが全件commitした場合だけHTTP 200 `status=committed`、送信`batch_id`、`record_count`、`inserted_count`、`duplicate_count`を応答。
-4. エラー・タイムアウト・commit成否不明ならAgentは未ACKをローカルに保持し、再送する設計。**旧PoCの2xxだけで送信済みにする処理を流用してはいけない**。
-5. 診断用`GET /api/agent/v1/telemetry/recent?limit=100`は、その認証Deviceの割当Vehicleの最新観測を最大100件返す。
+1. `PUT /api/agent/v1/capability-snapshots/{snapshot_id}` に、ECU/Loggerの項目能力を不変Snapshotとして登録（定義上の候補と実取得済みを区別）。\n2. `PUT /api/agent/v1/profile-revisions/{profile_revision_id}` に、車両・端末ID、Logger fingerprint、項目定義を登録。
+3. `POST /api/agent/v1/telemetry/batches` に、1 run単位の観測・イベント・gapレコードを送信。原本の`record_id`は再送でも変更しない。
+4. Serverが全件commitした場合だけHTTP 200 `status=committed`、送信`batch_id`、`record_count`、`inserted_count`、`duplicate_count`を応答。
+5. エラー・タイムアウト・commit成否不明ならAgentは未ACKをローカルに保持し、再送する設計。**旧PoCの2xxだけで送信済みにする処理を流用してはいけない**。
+6. 診断用`GET /api/agent/v1/telemetry/recent?limit=100`は、その認証Deviceの割当Vehicleの最新観測を最大100件返す。
 
 `Authorization: Bearer <device_token>`が必須。認証済みDeviceとリクエスト本文のvehicle/deviceが一致しない場合は拒否。合成値は`source_kind=synthetic`とし、実ECU由来として扱わない。
 

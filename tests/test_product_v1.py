@@ -186,7 +186,7 @@ def test_schema_is_explicitly_migrated_without_legacy_poc_ddl(ctx):
     expected = ScriptDirectory.from_config(config()).get_current_head()
     with store.connect() as db:
         row = db.execute("SELECT version_num FROM v1_alembic_version").fetchone()
-        assert row["version_num"] == expected == "0001_initial"
+        assert row["version_num"] == expected == "0002_capabilities"
         # The new product migration must not bootstrap the legacy PoC schema.
         assert db.execute("SELECT to_regclass('public.samples') AS legacy").fetchone()["legacy"] is None
         assert db.execute("SELECT to_regclass('public.v1_records') AS product").fetchone()["product"]
