@@ -28,12 +28,23 @@
 | 2.1-C1 | 旧RRBridge TSV→製品SQLiteを読み取り専用に取り込む合成検証 | **完了（実車未接続）** | [Agent PR #5](https://github.com/zawa356/RomRaider_agent/pull/5) |
 | 2.1-C2a | **pinした実Agent Java→実FastAPI→PostgreSQLの合成E2E** | **PASS（Agent commit 6dd46835固定／実ECU未確認）** | [E2E CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38346035656) |
 | 2.1-C2b | Agent最新main自動同期・継続E2E／既存RRBridge常駐統合 | 未着手（Agent側のPrivate token付きE2EはNOT RUN） | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
-| 2.1-D | Windows実機耐久、既存PoCのキュー欠損対策、永続オフセット等 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
+| 2.1-D1 | 旧TSV増分取込・SQLite永続offset・保存直後クラッシュ復旧 | **完了（Windows/Linux合成CI）** | [Agent PR #8](https://github.com/zawa356/RomRaider_agent/pull/8) |
+| 2.1-D2 | Agent新バージョンの実Server E2E再pin／欠損対策・常駐送受信 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
+| 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-D1：TSV増分読み込みとローカルSQLiteカーソル保全
+
+- [Agent PR #8](https://github.com/zawa356/RomRaider_agent/pull/8)をmainへ統合。従来の読み取り専用TSV全量再走査を、永続offset／行番号／metadata snapshot付き`IncrementalTsvBridge`に変更。明示CLIで最大256完結行／1回、Logger callback・安全ゲート・旧TSV送信は未変更
+- SQLite原本commit後にのみsource cursorを更新し、元ファイルの短縮／既読先頭・境界hash不一致／fileKey変更・CAS競合を保全側へ停止
+- [Agent CI #38348638979](https://github.com/zawa356/RomRaider_agent/actions/runs/38348638979)：**WindowsとLinuxの双方で合成136チェックPASS**（SQLite42/HTTP41/旧TSV16/増分37）。原本commit直後cursor更新前の故障注入→再起動時の不変IDで冪等再処理を実DB検証
+- [失敗CI #38348269336](https://github.com/zawa356/RomRaider_agent/actions/runs/38348269336)：新規故障注入fixtureのタブ文字誤記で失敗。fixture修正後PASS、原因・修正履歴はAgent側に保持
+- [増分取り込み保全設計](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_incremental_import.md)：fileKey不明時はアンカーhashが補助になるのみで完全なファイル改変検知ではない。旧Queue overflow/TSV writer error/原本削除・電源断・disk-fullの欠損は未解決
+- **Server側pinしたAgent実Server E2Eはcommit 6dd46835の旧版**。今回のD1を含む新Agent版との実E2EはD2で再pinして検証するまで未確認。本番操作・自動デプロイは引き続き無効
 
 ### 2026-10-13 — Phase 2.1-C2a：実Java Agent→実FastAPI/PostgreSQL E2Eが初めて成功
 
