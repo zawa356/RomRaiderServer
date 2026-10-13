@@ -8,7 +8,7 @@ import hashlib
 import os
 import secrets
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from psycopg.errors import IntegrityError
@@ -178,11 +178,13 @@ def health():
 
 
 @app.put("/api/agent/v1/profile-revisions/{profile_revision_id}")
-def put_profile(profile_revision_id: UUID, request: ProfileRevision,
+def put_profile(profile_revision_id: UUID, request: ProfileRevision, response: Response,
                 device=Depends(require_device)):
     if profile_revision_id != request.profile_revision_id:
         raise fail(422, "PROFILE_ID_MISMATCH", "URL and body profile IDs differ")
-    return store.register_profile(device,request.model_dump(mode="json"))
+    result = store.register_profile(device,request.model_dump(mode="json"))
+    response.status_code = 201 if result["status"] == "registered" else 200
+    return result
 
 
 @app.post("/api/agent/v1/telemetry/batches")
