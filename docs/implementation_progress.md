@@ -31,13 +31,23 @@
 | 2.1-D1 | 旧TSV増分取込・SQLite永続offset・保存直後クラッシュ復旧 | **完了（Windows/Linux合成CI）** | [Agent PR #8](https://github.com/zawa356/RomRaider_agent/pull/8) |
 | 2.1-D2a | 最新増分Agentの実Server E2E再pin／未完結行・再起動・重複再送 | **実Server合成CI PASS・PR #24** | [Server PR #24](https://github.com/zawa356/RomRaiderServer/pull/24)／[Agent PR #9](https://github.com/zawa356/RomRaider_agent/pull/9) |
 | 2.1-D2b-1 | 別Java Worker／SQLite永続再試行・要調査停止／既読TSV消失検出 | **Windows/Linux合成CI各208件PASS** | [Agent PR #11](https://github.com/zawa356/RomRaider_agent/pull/11) |
-| 2.1-D2b-2 | 旧Queue満杯drop・TSV writer失敗時の原本消失・旧ACK cleanupと製品v1整合 | **未実装（重大リスクとして特定）** | [Agent欠損分析](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_delivery_worker.md) |
+| 2.1-D2b-2a | 旧TSV writerの障害再試行・queue欠損可視化・旧ACKによる原本削除の禁止 | **完了（Linux/Windows合成CI各19件）** | [Agent PR #12](https://github.com/zawa356/RomRaider_agent/pull/12) |
+| 2.1-D2b-2b | queue飽和そのものの防止・最新／過去バッチの公平配送 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-D2b-2a：旧TSVの不可逆欠損リスクを低減（Agent側）
+
+- [Agent PR #12](https://github.com/zawa356/RomRaider_agent/pull/12)／Agent main `3086fd5839a5d876989cae22f89fd5ec5b7952f5`：旧`Stream.java`のキューdequeue後TSV書込失敗での原文破棄を停止。fsync成功まで保持し、読取り側と書き込み側でI/O同期
+- 旧Receiverの`.sent`を根拠にした**元TSVの自動削除は無効化**。製品Server ACKとは異なるため、未読TSVの喪失を避ける
+- bounded queue上限超では依然元観測を復元できない。復旧後に`E queue_overflow lost_lines=N`で**検知した欠損数を明示**。無欠損の完成扱いにしない
+- [PR上のWindows/Linux合成CI](https://github.com/zawa356/RomRaider_agent/actions/runs/38355405529)：`Stream.java`をtest stubでコンパイルし、Windows／Linux各19チェック成功
+- [Agent履歴台帳](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md)と[設計判断 D-029](https://github.com/zawa356/RomRaider_agent/blob/main/docs/08_decisions.md)に経緯を記録
+- **未試験**：X270 Zulu8 32bit、物理電源断・disk-full、満杯queueでの元行の完全保全、最新／過去の公平配送。Agentの実ECU操作・Serverの業務APIは変更していない
 
 ### 2026-10-13 — Phase 2.1-D2b-1：製品Workerの永続backoff・障害停止と旧PoC欠損分析
 
