@@ -165,3 +165,16 @@ def test_device_scope_and_status(ctx):
     got=ctx["client"].post("/api/agent/v1/status",json=status,headers=ctx["headers"])
     assert got.status_code==200,got.text
     assert got.json()["status"]=="recorded"
+
+def test_batch_size_limit_and_structured_errors(ctx):
+    path="/api/agent/v1/telemetry/batches"
+    oversized=ctx["client"].post(path,content=b" " * (512 * 1024 + 1),
+                                 headers={**ctx["headers"],"Content-Type":"application/json"})
+    assert oversized.status_code==413,oversized.text
+    assert oversized.json()["error"]["code"]=="PAYLOAD_TOO_LARGE"
+    assert oversized.json()["request_id"]
+    invalid=ctx["client"].post(path,json={"protocol_version":1,"records":[]},
+                               headers=ctx["headers"])
+    assert invalid.status_code==422,invalid.text
+    assert invalid.json()["error"]["code"]=="INVALID_REQUEST"
+    assert invalid.json()["request_id"]
