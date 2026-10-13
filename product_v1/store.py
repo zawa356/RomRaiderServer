@@ -31,7 +31,7 @@ def require_schema():
             raise RuntimeError(
                 "Product v1 schema is not migrated; run python -m product_v1.migrate upgrade"
             ) from exc
-    if row is None or row["version_num"] != "0002_capabilities":
+    if row is None or row["version_num"] != "0003_commands":
         raise RuntimeError(
             "Incompatible product-v1 schema version; migrate before starting the API"
         )
