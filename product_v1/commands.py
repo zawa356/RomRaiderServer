@@ -66,11 +66,22 @@ def claim(device, body):
         db.execute("SELECT vehicle_id FROM v1_vehicles WHERE vehicle_id=%s FOR UPDATE",
                    (device["vehicle_id"],))
         last = db.execute("""
-            SELECT client_state_revision FROM v1_reconciliations
+            SELECT client_state_revision,payload FROM v1_reconciliations
             WHERE device_id=%s ORDER BY reconcile_id DESC LIMIT 1
         """, (device["device_id"],)).fetchone()
         if not last or last["client_state_revision"] != body["client_state_revision"]:
             return _none()
+        local = last["payload"]
+        if local.get("local_execution_records"):
+            # A local journal needs independent safety adjudication.
+            return _none()
+        if local.get("last_command_id"):
+            known = db.execute("""
+                SELECT 1 FROM v1_command_requests
+                WHERE command_id=%s AND device_id=%s
+            """,(local["last_command_id"],device["device_id"])).fetchone()
+            if not known:
+                return _none()
         # Never assume that an expired delivery lease means execution did not occur.
         db.execute("""
             UPDATE v1_command_requests SET status='unknown',updated_at=now()
