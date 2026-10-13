@@ -21,12 +21,27 @@
 | 1.1-B | デバイス資格情報の失効・更新と認証試験 | **完了（CI合格、PR #13）** | [PR #13](https://github.com/zawa356/RomRaiderServer/pull/13) |
 | 1.1-C | Agent能力スナップショット登録と整合性試験 | **完了（CI合格、PR #14）** | [PR #14](https://github.com/zawa356/RomRaiderServer/pull/14) |
 | 1.1-D | Agent操作のclaim／report／reconcileと保守的な期限管理 | **完了（PR #15・合成CI合格）** | [PR #15](https://github.com/zawa356/RomRaiderServer/pull/15) |
-| 1.2-A | DB障害・ACK喪失・並列再送の耐障害契約試験 | **合成CI合格・PR #16** | [PR #16](https://github.com/zawa356/RomRaiderServer/pull/16) |\n| 1.2-B | Agent v1 OpenAPI契約の機械検証と受信境界テスト | **合成CI合格・PR #17** | [PR #17](https://github.com/zawa356/RomRaiderServer/pull/17) |\n| 2.1-A | Windows Agent製品版SQLite spool・ACK管理（Linux/Windows合成CI） | **完了（実ECU・HTTP未接続）** | [Agent PR #3](https://github.com/zawa356/RomRaider_agent/pull/3)／[Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |\n| 2.1-B | Agent側のServer v1 HTTPS/JSON送信・厳密ACK（契約モックCI） | **完了（本物のServer E2Eは未検証）** | [Agent PR #4](https://github.com/zawa356/RomRaider_agent/pull/4) |\n| 2.1-C〜D | 旧RRBridge統合・FastAPI/PostgreSQL E2E・Windows実機耐久試験 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
+| 1.2-A | DB障害・ACK喪失・並列再送の耐障害契約試験 | **合成CI合格・PR #16** | [PR #16](https://github.com/zawa356/RomRaiderServer/pull/16) |
+| 1.2-B | Agent v1 OpenAPI契約の機械検証と受信境界テスト | **合成CI合格・PR #17** | [PR #17](https://github.com/zawa356/RomRaiderServer/pull/17) |
+| 2.1-A | Windows Agent製品版SQLite spool・ACK管理（Linux/Windows合成CI） | **完了（実ECU・HTTP未接続）** | [Agent PR #3](https://github.com/zawa356/RomRaider_agent/pull/3)／[Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-B | Agent側のServer v1 HTTPS/JSON送信・厳密ACK（契約モックCI） | **完了（本物のServer E2Eは未検証）** | [Agent PR #4](https://github.com/zawa356/RomRaider_agent/pull/4) |
+| 2.1-C1 | 旧RRBridge TSV→製品SQLiteを読み取り専用に取り込む合成検証 | **完了（実車未接続）** | [Agent PR #5](https://github.com/zawa356/RomRaider_agent/pull/5) |
+| 2.1-C2 | Agent→実FastAPI→PostgreSQL E2E／常駐取り込み | **E2Eコード完成・Private Repo CI認証未設定でNOT RUN** | [Agent E2E手順](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_integration.md) |
+| 2.1-D | Windows実機耐久、既存PoCのキュー欠損対策、永続オフセット等 | 未着手 | [Agent進捗](https://github.com/zawa356/RomRaider_agent/blob/main/docs/product_v1_implementation_progress.md) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-C1：旧RRBridge TSV→製品v1 SQLiteの非破壊取込
+
+- [Agent PR #5](https://github.com/zawa356/RomRaider_agent/pull/5)で、旧RRBridgeのM/S/E TSVを読んで不変ProfileRevision、Observation、Eventの製品v1 JSONを生成する`LegacyTsvBridge`と、一度だけ取り込んでHTTP交換する明示実行用`ProductBridgeOnce`を追加
+- [Agent CI](https://github.com/zawa356/RomRaider_agent/actions/runs/38339596749)：Windows／Linuxそれぞれ**SQLite 42 + HTTP 41 + Legacy TSV import 16 = 99項目成功**。合成ログの再読み込み・部分行・原本UUID保存を検証
+- [E2E Workflow](https://github.com/zawa356/RomRaider_agent/actions/runs/38339596746)：GitHub両リポジトリがPrivateで相互読取用認証情報未設定。**E2E試験はNOT RUN**。後続の実FastAPI＋PostgreSQL接続テストを準備したが、合格したとは扱わない
+- ServerのDB/API本体に変更なし。旧RRBridge`Stream.java`のLogger callback／Queue／TSV senderも未変更。自動起動なし、実車X270／Zulu8 32-bit未確認
+- 既存PoCのキューあふれ／TSV writer失敗／14日保持による欠損リスクは残存。全TSV再走査も長期運用には不適。AgentからECU→Serverの無欠損を保証するにはPhase 2.1-C2/Dの検証が必要
+- 本作業で合わせて、既存台帳に混入していたリテラル`\\n`をMarkdownの実改行に修復（意味は変更しない）
 
 ### 2026-10-13 — Phase 2.1-B：Agent製品v1のHTTP送信／厳密ACK（合成CI合格）
 
@@ -70,9 +85,26 @@
 - 承認済み有効期間・activeタスク・最新plan revision・端末割当・最新reconcile版が一致する場合だけlease候補。期限切れleaseは`unknown`に移し**自動再配達しない**
 - report IDの同一内容再送は冪等、別内容衝突は409。報告状態を逆行させず、`verified`をServer受付のみで生成しない
 - Reconcileはローカル状態を監査記録として保管し、不一致・不明な実行を自動解決しない
-- 安全側の修正履歴：承認取消・計画更新後のlease再使用を禁止、不明ローカル実行履歴があるとclaimを拒否、古いreconcile時刻を409で拒否、通信本文サイズ制限を追加\n- [PR #15](https://github.com/zawa356/RomRaiderServer/pull/15)／[製品CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38330361959)：PostgreSQLの合成結合試験**28件PASS**、Docker起動／端末登録も成功。[旧PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38330362074)：supervisor／composeの2ジョブ成功
+- 安全側の修正履歴：承認取消・計画更新後のlease再使用を禁止、不明ローカル実行履歴があるとclaimを拒否、古いreconcile時刻を409で拒否、通信本文サイズ制限を追加
+- [PR #15](https://github.com/zawa356/RomRaiderServer/pull/15)／[製品CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38330361959)：PostgreSQLの合成結合試験**28件PASS**、Docker起動／端末登録も成功。[旧PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38330362074)：supervisor／composeの2ジョブ成功
 
-### 2026-10-13 — Phase 1.1-C：ECU／Logger能力情報の同期（作業中）\n\n- Alembic `0002_capabilities`で不変Snapshotとパラメーター適合度の索引表を追加（過去原本を更新しない）\n- `PUT /api/agent/v1/capability-snapshots/{snapshot_id}`を端末認証付きで追加\n- 定義上の存在／ECU適合推定／実取得確認／非対応／不明を区別したまま保存（定義に存在するだけで実取得済みとは扱わない）\n- Idempotentな再送、同一ID別内容の409、重複パラメーター422、認証拒否を実DBで検証\n- [PR #14](https://github.com/zawa356/RomRaiderServer/pull/14)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38329257391)で**14件PASS**、migration `0002_capabilities`、Dockerスモーク成功。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38329257275)も成功。実ECU上での能力発見は**未検証**\n\n### 2026-10-13 — Phase 1.1-B：端末資格情報の管理（作業中）\n\n- 製品版Server専用のローカル管理CLIでトークン再発行・端末失効・状態照会を実装\n- 端末IDは不変、資格情報のフィンガープリントだけDB保存。再発行時に旧トークンは即時失効\n- 失効は冪等で再有効化は認めない。既存観測・定義・計測実行を削除しない\n- PostgreSQL結合試験で旧tokenの401、再発行tokenの200、失効後401、他端末への影響なしを検証\n- [PR #13](https://github.com/zawa356/RomRaiderServer/pull/13)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824590)で**11件PASS**、Docker起動確認。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824542)も成功\n\n### 2026-10-13 — Phase 1.1-A：Alembicとスキーマ管理
+### 2026-10-13 — Phase 1.1-C：ECU／Logger能力情報の同期（作業中）
+
+- Alembic `0002_capabilities`で不変Snapshotとパラメーター適合度の索引表を追加（過去原本を更新しない）
+- `PUT /api/agent/v1/capability-snapshots/{snapshot_id}`を端末認証付きで追加
+- 定義上の存在／ECU適合推定／実取得確認／非対応／不明を区別したまま保存（定義に存在するだけで実取得済みとは扱わない）
+- Idempotentな再送、同一ID別内容の409、重複パラメーター422、認証拒否を実DBで検証
+- [PR #14](https://github.com/zawa356/RomRaiderServer/pull/14)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38329257391)で**14件PASS**、migration `0002_capabilities`、Dockerスモーク成功。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38329257275)も成功。実ECU上での能力発見は**未検証**
+
+### 2026-10-13 — Phase 1.1-B：端末資格情報の管理（作業中）
+
+- 製品版Server専用のローカル管理CLIでトークン再発行・端末失効・状態照会を実装
+- 端末IDは不変、資格情報のフィンガープリントだけDB保存。再発行時に旧トークンは即時失効
+- 失効は冪等で再有効化は認めない。既存観測・定義・計測実行を削除しない
+- PostgreSQL結合試験で旧tokenの401、再発行tokenの200、失効後401、他端末への影響なしを検証
+- [PR #13](https://github.com/zawa356/RomRaiderServer/pull/13)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824590)で**11件PASS**、Docker起動確認。[PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38328824542)も成功
+
+### 2026-10-13 — Phase 1.1-A：Alembicとスキーマ管理
 
 - `product_v1/migrations/`に製品版独立の**初期版0001_initial**を追加。既存PoC表を対象にしない
 - 製品APIと管理CLIは起動時DDLを行わず、現在のスキーマ版を**読み取りのみで検証**
