@@ -32,13 +32,26 @@
 | 2.1-D2a | 最新増分Agentの実Server E2E再pin／未完結行・再起動・重複再送 | **実Server合成CI PASS・PR #24** | [Server PR #24](https://github.com/zawa356/RomRaiderServer/pull/24)／[Agent PR #9](https://github.com/zawa356/RomRaider_agent/pull/9) |
 | 2.1-D2b-1 | 別Java Worker／SQLite永続再試行・要調査停止／既読TSV消失検出 | **Windows/Linux合成CI各208件PASS** | [Agent PR #11](https://github.com/zawa356/RomRaider_agent/pull/11) |
 | 2.1-D2b-2a | 旧TSV writerの障害再試行・queue欠損可視化・旧ACKによる原本削除の禁止 | **完了（Linux/Windows合成CI各19件）** | [Agent PR #12](https://github.com/zawa356/RomRaider_agent/pull/12) |
-| 2.1-D2b-2b | 最新／過去runの3:1公平配送（ACK永続台帳） | **Agent PR #13マージ済み・合成CI合格** | [Agent PR #13](https://github.com/zawa356/RomRaider_agent/pull/13) |\n| 2.1-D2b-2c | 旧PoCのメモリqueue飽和の根本対策・欠損最小化 | **未着手** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2b | 最新／過去runの3:1公平配送（ACK永続台帳） | **Agent PR #13マージ済み・合成CI合格** | [Agent PR #13](https://github.com/zawa356/RomRaider_agent/pull/13) |
+| 2.1-D2b-2c-1 | S行優先制限によりM/E行へqueue 4096枠を予約 | **Agent PR #15・合成CI合格** | [Agent PR #15](https://github.com/zawa356/RomRaider_agent/pull/15) |
+| 2.1-D2b-2c-2 | 旧TSV writerの64KiB分割書込・IOException/RuntimeException後のrollback | **Agent PR #16・合成CI合格** | [Agent PR #16](https://github.com/zawa356/RomRaider_agent/pull/16) |
+| 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：2c-1/2c-2は限定的な欠損軽減のみ** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
 | 5–6 | 安全Supervisor・数値監視・解析履歴 | 未着手 | [Issue #10](https://github.com/zawa356/RomRaiderServer/issues/10) |
 
 ## 変更履歴
+
+### 2026-10-13 — Phase 2.1-D2b-2c-1/2：旧PoC queue保護とwriter負荷・障害試験（Agent main同期）
+
+- [Agent PR #15](https://github.com/zawa356/RomRaider_agent/pull/15)で容量200,000行のqueueにS行のソフト上限195,904行を導入し、M/Eを保持する余地4,096行を確保（メタデータ完全保護ではない）。[main CI #38367748133](https://github.com/zawa356/RomRaider_agent/actions/runs/38367748133) Windows/Linux PASS。
+- [Agent PR #16](https://github.com/zawa356/RomRaider_agent/pull/16)で、旧`Stream.java`の行単位TSV書込を64KiB固定チャンクでまとめた。IOException・RuntimeExceptionによる部分書込時はファイル元長への復旧を試み、fsync成功までwriter待機中の原文を保持。2,400行と大行／日本語行／障害注入を含む31チェックがCloudPC上でPASSし、[PR CI #38369893799](https://github.com/zawa356/RomRaider_agent/actions/runs/38369893799) Windows/Linux両方PASS。
+- Agent `main`はPR #16マージcommit `72dce98a677e4a2702f56e79f092246b40670ec7`。このServerの更新は**進捗台帳のみ**で、Server製品コードやデプロイは変更しない。
+- **未完了**：長期I/O停止でqueueが尽きる場合のS行欠損、電源断時に未fsyncの原本消失、rollback自身が失敗した場合の復旧、X270 Zulu8 32bit／実車/disk-full。サンプル欠損ゼロ、耐久E2E成功、本番配備済みとは記載しない。
+- 最新Agent mainを使ったFastAPI/PostgreSQL E2Eは引き続き**NOT RUN**。過去の固定Agent成功CIとは区別。Agent開発中の初回LF文字エスケープ不備によるコンパイル失敗 [run #38369266614](https://github.com/zawa356/RomRaider_agent/actions/runs/38369266614) は修正しており、失敗履歴はAgent台帳に残す。
+
+
 
 ### 2026-10-13 — チャット上限に伴う引継ぎ正本
 
