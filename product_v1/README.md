@@ -59,6 +59,30 @@ docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
 
 結果に`vehicle_id`、`device_id`、`device_token`を**1回だけ**表示。tokenは平文でDBに保存しない。ログやIssue、チャット、公開GitHubに貼らず、外部の秘密管理に保管すること。
 
+### 端末トークンの再発行・失効（Phase 1.1-B）
+
+DB管理者だけがアクセスできるローカルCLIを使用します。**HTTP／MCPに資格情報操作は公開していません。**
+
+```bash
+# 端末の有効／失効状態を確認する
+docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
+  python -m product_v1.credentials status --device-id DEVICE_UUID
+
+# トークンを再発行（古いトークンはこの時点で無効）
+docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
+  python -m product_v1.credentials rotate --device-id DEVICE_UUID
+
+# 端末を恒久失効（2回目以降の実行も冪等）
+docker compose -f compose.yaml -f compose.product-v1.yaml exec api-v1 \
+  python -m product_v1.credentials revoke --device-id DEVICE_UUID
+```
+
+- `rotate`は新しいランダムトークンを**一度だけ標準出力に表示**。パイプ／端末ログ／CI／GitHub Issue等へ漏洩させない。DBにはSHA-256フィンガープリントだけ保存する
+- `rotate`は**即時切替**。通信中のWindows Agentは旧トークンで401になるため、安全な端末再設定とスプール保持が必要。サーバー未ACKの観測は削除しない
+- `revoke`では以降の全端末認証が401となる。同じIDの再有効化は初版では禁止。誤操作防止のため対象端末IDを確認する
+- 削除／更新により過去の観測原本・ProfileRevision・Runの記録は消去されない
+- このCLIはデバイス管理の最小機能。ユーザーによる包括承認・MCP認証などは別の機能
+
 ## 3. API呼出し順序
 
 1. `PUT /api/agent/v1/profile-revisions/{profile_revision_id}` に、車両・端末ID、Logger fingerprint、項目定義を登録。
