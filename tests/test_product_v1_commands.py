@@ -232,3 +232,18 @@ def test_unapproved_action_is_not_delivered(env):
             WHERE approval_scope_id=%s""",(env["approval"],))
     # Even an approved plan cannot bypass the dedicated on-car safety phase.
     assert claim(env).json()["status"]=="none"
+
+
+def test_claim_blocked_after_unknown_local_execution(env):
+    env["monkeypatch"].setenv("ROMLOGGER_ENABLE_COMMAND_CLAIM","true")
+    assert reconcile(env,last_command_id=str(uuid4())).json()["status"]=="unknown"
+    assert claim(env).json()["status"]=="none"
+
+
+def test_claim_blocked_when_local_journal_needs_review(env):
+    env["monkeypatch"].setenv("ROMLOGGER_ENABLE_COMMAND_CLAIM","true")
+    r=reconcile(env,local_execution_records=[
+        {"command_id":str(uuid4()),"state":"unknown"}])
+    assert r.status_code==200
+    assert r.json()["status"]=="action_required"
+    assert claim(env).json()["status"]=="none"
