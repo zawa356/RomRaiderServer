@@ -2,7 +2,7 @@
 
 設計と実装の両方を追跡する。GitHub PRとCI結果、未着手の機能の正本は[実装進捗](../docs/implementation_progress.md)。
 
-## [Unreleased] Phase 1.2-A（2026-10-13）
+## [1.2-A] Phase 1.2-A（2026-10-13）
 
 ### Fixed
 - PostgreSQL接続失敗／commit確認不能な場合は機密情報を含まない`503 STORAGE_UNAVAILABLE`と再送可能フラグを返す
@@ -15,7 +15,7 @@
 - 検証はsynthetic CIの範囲。実ECU／Agent現車動作は未検証
 
 ### Verification
-- CI完了後にPR・結果を記録
+- [PR #16](https://github.com/zawa356/RomRaiderServer/pull/16)／[Product CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38334387914)：**34件PASS**。 [PoC CI](https://github.com/zawa356/RomRaiderServer/actions/runs/38334387951)：全ジョブPASS
 
 ## [1.1-D] Phase 1.1-D（2026-10-13）
 
