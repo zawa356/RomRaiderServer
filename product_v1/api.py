@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from psycopg.errors import IntegrityError
+from psycopg import OperationalError
 
 from . import store, commands
 
@@ -265,6 +266,16 @@ async def request_guard(request: Request, call_next):
 async def domain_error_handler(request: Request, exc: store.DomainError):
     return error_response(request, exc.status, exc.code, exc.message,
                           details=exc.details)
+
+
+@app.exception_handler(OperationalError)
+async def storage_unavailable_handler(request: Request, exc: OperationalError):
+    # Connection loss can happen BEFORE commit or AFTER commit but BEFORE ACK.
+    # The Agent must keep the batch and retry with unchanged record IDs.
+    # Never expose the DSN, server credentials or driver exception text.
+    return error_response(request, 503, "STORAGE_UNAVAILABLE",
+                          "Storage confirmation unavailable; retain unacknowledged data",
+                          retryable=True)
 
 
 @app.exception_handler(IntegrityError)
