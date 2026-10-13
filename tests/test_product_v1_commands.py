@@ -263,3 +263,15 @@ def test_older_reconciliation_cannot_displace_latest_state(env):
             WHERE device_id=%s
         """,(env["device"],)).fetchall()]
     assert revisions==["most-recent"]
+
+
+def test_reconcile_and_command_request_byte_limits(env):
+    # Bound response allocation even when Content-Length is supplied.
+    huge = b" " * (64*1024+1)
+    response = env["client"].post(URL+"/reconcile",content=huge,
+        headers={**env["headers"],"Content-Type":"application/json"})
+    assert response.status_code==413
+    assert response.json()["error"]["code"]=="PAYLOAD_TOO_LARGE"
+    huge_command = env["client"].post(URL+"/commands/claim",content=b" "*(16*1024+1),
+        headers={**env["headers"],"Content-Type":"application/json"})
+    assert huge_command.status_code==413
