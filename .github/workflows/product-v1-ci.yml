@@ -1,0 +1,111 @@
+name: Product v1 contract CI
+
+on:
+  push:
+    branches: [main, 'feat/**']
+    paths:
+      - 'product_v1/**'
+      - 'tests/test_product_v1.py'
+      - '.github/workflows/product-v1-ci.yml'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - 'compose.product-v1.yaml'
+  pull_request:
+    paths:
+      - 'product_v1/**'
+      - 'tests/test_product_v1.py'
+      - '.github/workflows/product-v1-ci.yml'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - 'compose.product-v1.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-v1-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract-postgresql:
+    name: Atomic ACK and device authorization (PostgreSQL 16)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: romlogger
+          POSTGRES_DB: romlogger_ci
+          POSTGRES_PASSWORD: ci_only_disposable_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U romlogger -d romlogger_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://romlogger:ci_only_disposable_password@127.0.0.1:5432/romlogger_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install runtime and test dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install 'pytest>=8,<10' 'httpx>=0.27,<1'
+      - name: Compile server product modules
+        run: python -m compileall -q product_v1
+      - name: Run PostgreSQL integration and contract tests
+        run: python -m pytest -v tests/test_product_v1.py
+
+  isolated-image:
+    name: Product API container build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build product container (do not deploy)
+        run: docker build -t romlogger:v1-ci .
+      - name: Validate product Compose overlay
+        env:
+          POSTGRES_PASSWORD: ci_only_disposable_password
+          DATABASE_URL: postgresql://romlogger:ci_only_disposable_password@db:5432/romlogger_ci
+        run: |
+          # Disposable CI-only configuration; never use actual vehicle credentials.
+          cat > .env <<'EOF'
+          DATABASE_URL=postgresql://romlogger:ci_only_disposable_password@db:5432/romlogger
+          POSTGRES_PASSWORD=ci_only_disposable_password
+          INGEST_TOKEN=ci_only_legacy_ingest
+          AGENT_TOKEN=ci_only_legacy_agent
+          MCP_TOKEN=ci_only_legacy_mcp
+          ALLOW_TEST_COMMANDS=false
+          EOF
+          docker compose -f compose.yaml -f compose.product-v1.yaml config -q
+      - name: Start real product API container and PostgreSQL
+        run: |
+          docker compose -f compose.yaml -f compose.product-v1.yaml up -d --build db api-v1
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18083/health >/dev/null; then
+              echo "Product API smoke: PASS"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Product API did not become healthy" >&2
+          exit 1
+      - name: Smoke test actual device provisioning
+        run: |
+          docker compose -f compose.yaml -f compose.product-v1.yaml exec -T api-v1 \
+            python -m product_v1.admin --display-name 'CI synthetic vehicle' \
+            | python -c 'import sys,json; d=json.load(sys.stdin); assert d["device_id"] and d["vehicle_id"] and d["device_token"]; print("Device provisioning: PASS")'
+      - name: Collect product container logs on failure
+        if: failure()
+        run: docker compose -f compose.yaml -f compose.product-v1.yaml logs --tail=100 db api-v1
+      - name: Stop disposable product containers
+        if: always()
+        run: docker compose -f compose.yaml -f compose.product-v1.yaml down -v
