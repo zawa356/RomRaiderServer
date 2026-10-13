@@ -1,6 +1,6 @@
 # RomLogger 設計ドキュメント体系
 
-**チャット移行時の最初の入口:** [2026-10-13 開発状況・CI・安全境界・未着手項目の引継ぎ](handoff/2026-10-13_chat_handoff.md)。実装の最新進捗は[実装進捗・変更履歴](implementation_progress.md)とGitHubの現在のmainを優先。
+**最新のCodex夜間開発・再開指示書:** [2026-10-13 Codex引継ぎ（安全ゲート・CloudPC・実装Phase・作業ログ）](handoff/2026-10-13_codex_overnight.md)。[旧チャット移行引継ぎ](handoff/2026-10-13_chat_handoff.md)は過去の基準点。最新実装状態は[実装進捗・変更履歴](implementation_progress.md)とGitHub main/PR/CIを優先。
 
 | 項目 | 内容 |
 | --- | --- |
