@@ -12,7 +12,7 @@ from product_v1.api import app
 
 @pytest.fixture(scope="module")
 def ctx():
-    store.init_schema()
+    store.require_schema()
     vehicle_id, device_id = uuid4(), uuid4()
     token = "ci_" + uuid4().hex + uuid4().hex
     with store.connect() as db:
