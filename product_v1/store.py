@@ -31,7 +31,7 @@ def require_schema():
             raise RuntimeError(
                 "Product v1 schema is not migrated; run python -m product_v1.migrate upgrade"
             ) from exc
-    if row is None or row["version_num"] != "0001_initial":
+    if row is None or row["version_num"] != "0002_capabilities":
         raise RuntimeError(
             "Incompatible product-v1 schema version; migrate before starting the API"
         )
@@ -69,6 +69,48 @@ def register_profile(device: dict, payload: dict):
                 or row["vehicle_id"] != vehicle):
             raise DomainError(409, "PROFILE_REVISION_CONFLICT", "Profile ID has different content")
     return {"status": "registered" if inserted else "already_registered", "profile_revision_id": ident}
+
+
+
+def register_capability(device: dict, snapshot_id: str, payload: dict):
+    """Idempotently store the complete capability snapshot and indexed parameter rows."""
+    vehicle_id = device["vehicle_id"]
+    if (payload["device_id"] != str(device["device_id"])
+            or payload["vehicle_id"] != str(vehicle_id)):
+        raise DomainError(403, "DEVICE_SCOPE", "Device or vehicle mismatch")
+    fields = [p["parameter_id"] for p in payload["parameters"]]
+    if len(fields) != len(set(fields)):
+        raise DomainError(422, "DUPLICATE_PARAMETER", "Capability parameter repeated")
+    signature = digest(payload)
+    with connect() as db:
+        db.execute("SELECT vehicle_id FROM v1_vehicles WHERE vehicle_id=%s FOR UPDATE",
+                   (vehicle_id,))
+        inserted = db.execute("""
+            INSERT INTO v1_capability_snapshots(snapshot_id,device_id,vehicle_id,
+                logger_version,definition_fingerprint,observed_at,content_hash,payload)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+            ON CONFLICT DO NOTHING RETURNING snapshot_id
+        """, (snapshot_id,device["device_id"],vehicle_id,
+              payload["logger_version"],payload["definition_fingerprint"],
+              payload["observed_at"],signature,Jsonb(payload))).fetchone()
+        row = db.execute("""
+            SELECT device_id,vehicle_id,content_hash FROM v1_capability_snapshots
+            WHERE snapshot_id=%s
+        """, (snapshot_id,)).fetchone()
+        if (row["device_id"] != device["device_id"]
+                or row["vehicle_id"] != vehicle_id
+                or row["content_hash"] != signature):
+            raise DomainError(409, "CAPABILITY_SNAPSHOT_CONFLICT",
+                              "Snapshot ID is already registered with different content")
+        if inserted:
+            for p in payload["parameters"]:
+                db.execute("""
+                    INSERT INTO v1_capability_parameters(snapshot_id,parameter_id,
+                        name,unit,availability,evidence)
+                    VALUES (%s,%s,%s,%s,%s,%s)
+                """, (snapshot_id,p["parameter_id"],p["name"],p["unit"],
+                      p["availability"],p.get("evidence")))
+    return {"status":"registered" if inserted else "already_registered"}
 
 
 def _ensure_run(db, device, run_id):
