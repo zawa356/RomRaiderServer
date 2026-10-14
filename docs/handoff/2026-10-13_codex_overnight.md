@@ -1,5 +1,9 @@
 # RomLogger — Codex無人開発・再開指示書（2026-10-13 夜、正本）
 
+## 2026-10-14 実作業後の再開案内
+
+[Agent最終報告](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_overnight_report.md)、[最新worklog](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_overnight_worklog.md)、両repoの現行進捗を先に確認する。4b-2d-2b-1のlock PoCは統合済み。2b-2のwatermarkはLinux成立/Windows fileKey未提供でBLOCKED、2b-3結合は前提未達で未実装。既存writer/Worker/本番は非変更。以下の開始時スナップショットは履歴として保持し、安全・承認・Git記録規約は引き続き適用する。
+
 > **目的**：ユーザーが就寝中で追加承認を出せない時間帯に、Codexが安全な合成開発を小Phaseごとに自律実施し、利用上限やコンテキスト切断を挟んでもGitの正本から正確に再開できるようにする。
 >
 > **本書は作業ルールと開始時点のスナップショット**。読み始める前に両リポジトリの現在の `origin/main`、open PR、CI、`docs/implementation_progress.md` / Agent進捗を再確認する。本書のSHAは将来の更新を上書きしない。
