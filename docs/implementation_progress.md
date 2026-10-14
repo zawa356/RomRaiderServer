@@ -339,3 +339,13 @@
 - [Agent最終文書PR #29](https://github.com/zawa356/RomRaider_agent/pull/29)にreport/worklog/履歴/進捗/入口の最終証跡。現在地はmain/PR/CIを照合して取得する。VPSのServer専用cloneは/home/codex/git/romlogger-codex-4b2d2b-server、文書統合後の両mainを同期する。
 - VPS caddy/ssh active、mcp-ssh/ssh-mcp-chatgpt running、codex Java試験残存なし。サービス設定/再起動・認証・既存DB変更コマンドなし。MCP API機能healthはNOT RUN。
 - **終了区切り: 独立PoC+安全拒否+文書同期まで。2b-3の結合はBLOCKED/未実装。** Windows原本識別方式とsession/source claim/rotationの契約が次レビュー対象。
+
+## 2026-10-14 日中 — Agent Phase 4b-2d-2b-3a 原本同一性比較
+
+- [Agent PR31](https://github.com/zawa356/RomRaider_agent/pull/31)、[比較設計](https://github.com/zawa356/RomRaider_agent/blob/feat/day-3a-identity/docs/phase_4b_2d_2b_3a_identity_comparison.md)、ADR D-041。test-only fixtureのみ、製品RLJ1/RLI1/RLC1/Worker/DB/ACK/正式IFの変更なし。
+- A hardlink anchorは同内容別inode置換を区別するが、whole-set複製は関係を再構築できる。C UUID/headerもコピー可能。A/C単独識別を否決。B NTFS native volume/file indexは推奨実験候補だが製品採用ではない。
+- WSL/VPS Linux journal222（旧197+比較25）PASS、CloudPC jr2twt専用clone実SQLite/receipt344 PASS、合計566 unique checks。spool322追加実行は同じ部分の回帰で二重加算しない。
+- Agent CI38495966977/f5d87af：Windows Server2025 Temurin17 x64 journal168（旧143+25）+SQLite344+native18=530 unique checks PASS、両OS適用試験steps success。LinuxのWindows native stepは意図したSKIPPED。最新docs head/main CIは後続記録を参照。
+- Linux同JVManchor別handle closeはlegacy guardを失う反例。Bはテスト専用JNA5.14.0 core（固定SHA）、NTFS既存read-attributes共有handleのみ。製品lib/distへの追加なし。
+- 3b/3c/3dは所有handle binding・expected identity/highwater永続ledger・directory durabilityゲート未達でBLOCKED。Windows既存watermark56 NOT RUN、dir UNCONFIRMED。次の安全な小PhaseはJava8/x86とbound handle read-only診断。実車/ECU/X270/物理電源断/OS再起動/本番配備はNOT RUN。
+- CloudPC MCP利用成功、既存gh権限を使用。既存サービス/認証/本番DB変更なし。
