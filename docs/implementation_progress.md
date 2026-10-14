@@ -358,3 +358,13 @@
 - コピーされたpathnameから旧reader handleへidentityが誤結合しないこと、in-place改変は同じIDでも既読SHAで拒否すること、old writer mandatory lock下のnative READ拒否を実確認。
 - 3a PR31/main c58a4ba、Server42/main31ac365のmainCI38496452266/38496457020successも確認済み。
 - 3b/3c/3d統合ゲートは未達。writer-owned fsync binding、Windows directory syncUNCONFIRMED、persistent expected ledger/highwaterが未実装。次はsafe alternative 3a-writer-binding、製品形式/DB/Worker/本番は変更しない。
+
+## 2026-10-14 — Agent安全代替Phase 3a-writer-binding
+
+- [Agent PR33](https://github.com/zawa356/RomRaider_agent/pull/33)、D-043、[設計](https://github.com/zawa356/RomRaider_agent/blob/test/day-3a-writer-binding/docs/phase_4b_2d_2b_3a_writer_binding.md)。同一native handleでNTFS identity/owned prefix/WriteFile/FlushFileBuffers、coordination＋native guardのtest-only検証。marker/製品DB/ACKへ接続なし。
+- Windows17/x64 nativewriter44、actual Zulu8 1.8.0_504/x86 nativewriter45 PASS。code96e4f15 CI38497582903全3jobs適用steps success、raw Windows logsで件数/actual bitnessを照合。最新docs/mainCIは後続記録。
+- Windows17 journal168+SQLite344+native18+READ20+writer44=594 unique checks。x86 subset154（18+21+45+25+39+6）。x86 SQLite/full旧watermark56はNOT RUN。VPS専用phase clone journal222+SQLite344=566 PASS、native writer Linux runtime NOT RUN。
+- 原本を置換しない5別JVM所有権matrix、native reader共有、rename拒否、quota/部分原本/改変/UTF16/closed/fault latch、実readonly native flush拒否、flush前後haltを確認。物理電源断/実ENOSPC/OS再起動/X270/実ECUではない。
+- 3a比較/compat/nativewriterのTEST primitivesまで成立。既存RLC1 full56はWindows fileKeyでBLOCKED、Windows dirUNCONFIRMED、新marker version・永続expected ID/highwater/原文receipt同transaction・rotationは未実装。3c/3d/製品ライブ配線はBLOCKED。
+- 次Phase3bは別branchで新identity tag/versionとmarkerの安全設計・負試験が候補。RLC1の無断読替え、dirUNKNOWNのPASS昇格、SQLite/ACKへの暗黙配線をしない。
+- Agent32/Server43のmainCI38497117325/38497121453全適用steps成功確認済み。既存サービス/認証/本番DB非変更。
