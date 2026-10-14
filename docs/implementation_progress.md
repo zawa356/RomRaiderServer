@@ -386,3 +386,11 @@
 - Fixc72ad0d：owned handleのpost-flush new frameをWriteFileへ渡したexact bytesと照合し、改変はProof拒否/terminal latch/CRC-valid原本保全。CI38499593483全3jobs success、raw115643128338/115643128598で実確認。
 - 最新x64writer46/actualZulu8 1.8.0_504 x86writer47 PASS。combined Windows17/x64596、x86subset156、Linux566。旧594/154/writer44/45は当時のfixture範囲で、この新負試験の成功ではない。最新docs-head/main統合は後続記録。
 - 4小Phase（比較/compat/nativewriter/integrity）まで。RLC1 Windows full56/dirUNCONFIRMED、新marker version/永続expected ledger/highwater/rotationのゲートは変わらない。次は別Phase3bのtest-only設計。
+
+## 2026-10-14 11:24 JST — 4小Phaseの最新最終verification
+
+- Agent36/Server46全MERGED、コードmain126c174a93a6b8a1cf3aa14e90bd6c4902b94055/8804caac79bf887d69dc26087139a95bac500516。最新Agent mainCI38500236200/Server mainCI38500240744全適用steps/jobs success、rawWindows logsでwriter46/47とactualdata-model32を確認。
+- 最終レビューfixを含む4Phaseまで完了：原本3案比較、native READ/Zulu8x86、native ownedwrite/flush、post-flush exact-frame integrity。最新Windows17/x64596、x86subset156、Linux/VPS566、legacy44。旧594/154は追加負試験前の範囲。
+- Agent[日中report](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_daytime_report.md)/worklogを最新化。最終metadata docs/daytime-integrity-finalは実行コード変更なしでpublished HEADは再取得する。
+- 3b新版marker設計・独立負試験が次。RLC1Windows full56 NOT RUN/BLOCKED、dirUNCONFIRMED、新identity-tag/expected ledger/atomic highwater/receipt/rotation/実機/製品配線の未成立を維持。
+- Product code/protocol/DB/Logger/サービス/認証は変更なし。RED213fd22/CI38499434376とfixc72ad0d/GREEN/merged mainまでGitで追跡可能。
