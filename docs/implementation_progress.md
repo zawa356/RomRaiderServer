@@ -349,3 +349,12 @@
 - Linux同JVManchor別handle closeはlegacy guardを失う反例。Bはテスト専用JNA5.14.0 core（固定SHA）、NTFS既存read-attributes共有handleのみ。製品lib/distへの追加なし。
 - 3b/3c/3dは所有handle binding・expected identity/highwater永続ledger・directory durabilityゲート未達でBLOCKED。Windows既存watermark56 NOT RUN、dir UNCONFIRMED。次の安全な小PhaseはJava8/x86とbound handle read-only診断。実車/ECU/X270/物理電源断/OS再起動/本番配備はNOT RUN。
 - CloudPC MCP利用成功、既存gh権限を使用。既存サービス/認証/本番DB変更なし。
+
+## 2026-10-14 — Agent安全代替Phase 3a-compat
+
+- [Agent PR32](https://github.com/zawa356/RomRaider_agent/pull/32)、D-042、[設計](https://github.com/zawa356/RomRaider_agent/blob/test/day-3a-compat/docs/phase_4b_2d_2b_3a_compatibility.md)。同じnative READ handleからNTFS identity/bytesを取得するtest-only診断。NOT_COMMITTED、製品DB/ACKに使わない。
+- 実Windows Server2025/Zulu8 **1.8.0_504・32bit**でdata-model32をassert。native18+READ21+comparison25+split39+watermark安全拒否6=109 checks PASS。x86 SQLite/product試験はNOT RUN。X270/Windows10/RomRaider同JVMの成功ではない。
+- Windows17/x64 journal168+SQLite/receipt344+native18+READ20=550 unique PASS。Linux CI222+344=566、VPS dedicated phase cloneでjournal222回帰PASS。code032f294 CI38496691143全3jobs/適用steps success。最新docs-head/mainCIは後続記録。
+- コピーされたpathnameから旧reader handleへidentityが誤結合しないこと、in-place改変は同じIDでも既読SHAで拒否すること、old writer mandatory lock下のnative READ拒否を実確認。
+- 3a PR31/main c58a4ba、Server42/main31ac365のmainCI38496452266/38496457020successも確認済み。
+- 3b/3c/3d統合ゲートは未達。writer-owned fsync binding、Windows directory syncUNCONFIRMED、persistent expected ledger/highwaterが未実装。次はsafe alternative 3a-writer-binding、製品形式/DB/Worker/本番は変更しない。
