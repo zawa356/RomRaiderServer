@@ -44,6 +44,9 @@
 | 2.1-D2b-2c-4b-2d-1 | 停止済みjournal用の明示offline Worker、永続review停止、読み取り専用状態CLI | **Agent PR #24マージ、CloudPC 419チェック＋実Server合成7件/3profiles E2E PASS、Windows/Linux CI PASS** | [Agent PR #24](https://github.com/zawa356/RomRaider_agent/pull/24) |
 | 2.1-D2b-2c-4b-2d-2a | writer併行RLJ1 read-only診断とUUID sidecar read-only化 | **Agent PR #25マージ、CloudPC/Linux443項目PASS、Windows mandatory FileLockでライブread BLOCKED、両OS CI PASS** | [Agent PR #25](https://github.com/zawa356/RomRaider_agent/pull/25) |
 | 2.1-D2b-2c | 旧PoC queue飽和・電源断前の欠損の根本対策 | **継続中：Linux read-only診断のみ、Windowsライブ読取は現行FileLockで不可。確定watermark／運用Workerへの接続／電源断時無欠損は未実装** | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
+| 2.1-D2b-2c-4b-2d-2b-1 | Agent lock分離・新旧別JVM排他の独立PoC | **PR #27 merged / Windows・Linux CI PASS（運用非接続）** | [Agent PR #27](https://github.com/zawa356/RomRaider_agent/pull/27) |
+| 2.1-D2b-2c-4b-2d-2b-2 | fsync watermark / 原本prefix検証PoC | **PR #28 merged / Linux成立、Windows BLOCKED（安全拒否CI PASS）** | [Agent PR #28](https://github.com/zawa356/RomRaider_agent/pull/28) |
+| 2.1-D2b-2c-4b-2d-2b-3 | 新writer/reader/SQLite結合・rotation | **BLOCKED/未実装（両OS成立ゲート未達）、境界設計のみ** | [夜間報告](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_overnight_report.md) |
 | 2.1-D3 | X270 Zulu8 32-bit／電源断／disk-full／実車耐久 | 未着手 | [Issue #7](https://github.com/zawa356/RomRaiderServer/issues/7) |
 | 3 | 実ECU全経路の停車試験 | 未着手 | [Issue #8](https://github.com/zawa356/RomRaiderServer/issues/8) |
 | 4 | 本番MCP認証、生データ検索・anchor | 未着手 | [Issue #9](https://github.com/zawa356/RomRaiderServer/issues/9) |
@@ -327,3 +330,12 @@
 - [公式実装](https://github.com/openjdk/jdk17u/blob/master/src/java.base/windows/classes/sun/nio/fs/WindowsFileAttributes.java)を確認し、ensureAccurateMetadataで解決する推測は撤回。既存起動設定への追加はしない。
 - 2b-3新writer/reader/SQLite結合は**両OSwatermark成立ゲート未達でBLOCKED**。rotation候補は16ファイル/各8MiB、原本+identity+watermark+lockの保全、ACK前/不明時削除禁止、原本不変path/UUID、persistent cursor/receipt同一transactionを設計記録のみ。
 - 代替候補: hardlink anchor/isSameFile、Windows native file index、UUID内包原本形式。既存v1_source_claimsのsession単一source規約とrotationの整合、dir sync/物理電源断、同一JVMhandle closeも未解決。運用承認待ちとして残す。
+
+### 2026-10-14 09:52 JST — 最終統合・検証結果（利用制限から再開）
+
+- Agent PR #28 merged、実装main `e3d76c22fba8fce7f41ad03f6f7c0b386a5794d9`。最新PR CI38492040774/38492040888、main CI38492256469/38492256464は両OS全jobsと実試験success。
+- VPS最終実試験f90f103: journal197＋SQLite/receipt344=541 PASS、実装mainへ同期・clean。WSL legacy test.shはignored公式RomRaider1.1.0-NOV26-2025 compile-only jar導入後44 PASS/0 FAIL (最初の欠落compile失敗もAgent履歴に保存)。
+- Windows CI: journal143＋SQLite344=487 PASS。watermark full56はBLOCKED/NOT RUN、primitive3+安全拒否/保全3だけ成功。directory force Windows UNCONFIRMED、Linux SYNCED観測。
+- [Agent最終文書PR #29](https://github.com/zawa356/RomRaider_agent/pull/29)にreport/worklog/履歴/進捗/入口の最終証跡。現在地はmain/PR/CIを照合して取得する。VPSのServer専用cloneは/home/codex/git/romlogger-codex-4b2d2b-server、文書統合後の両mainを同期する。
+- VPS caddy/ssh active、mcp-ssh/ssh-mcp-chatgpt running、codex Java試験残存なし。サービス設定/再起動・認証・既存DB変更コマンドなし。MCP API機能healthはNOT RUN。
+- **終了区切り: 独立PoC+安全拒否+文書同期まで。2b-3の結合はBLOCKED/未実装。** Windows原本識別方式とsession/source claim/rotationの契約が次レビュー対象。

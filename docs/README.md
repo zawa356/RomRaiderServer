@@ -1,5 +1,7 @@
 # RomLogger 設計ドキュメント体系
 
+**2026-10-14 夜間作業の結果・再開点:** [Agent夜間報告](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_overnight_report.md)、[Agent worklog](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_overnight_worklog.md)。Windows watermark BLOCKEDのためPhase 4b-2d-2b-3結合は未実装。
+
 **最新のCodex夜間開発・再開指示書:** [2026-10-13 Codex引継ぎ（安全ゲート・CloudPC・実装Phase・作業ログ）](handoff/2026-10-13_codex_overnight.md)。[旧チャット移行引継ぎ](handoff/2026-10-13_chat_handoff.md)は過去の基準点。最新実装状態は[実装進捗・変更履歴](implementation_progress.md)とGitHub main/PR/CIを優先。
 
 | 項目 | 内容 |
