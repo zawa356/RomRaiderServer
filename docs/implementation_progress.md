@@ -368,3 +368,13 @@
 - 3a比較/compat/nativewriterのTEST primitivesまで成立。既存RLC1 full56はWindows fileKeyでBLOCKED、Windows dirUNCONFIRMED、新marker version・永続expected ID/highwater/原文receipt同transaction・rotationは未実装。3c/3d/製品ライブ配線はBLOCKED。
 - 次Phase3bは別branchで新identity tag/versionとmarkerの安全設計・負試験が候補。RLC1の無断読替え、dirUNKNOWNのPASS昇格、SQLite/ACKへの暗黙配線をしない。
 - Agent32/Server43のmainCI38497117325/38497121453全適用steps成功確認済み。既存サービス/認証/本番DB非変更。
+
+## 2026-10-14 日中最終verification — 3小Phaseの区切り
+
+- Agent31/32/33、Server42/43/44全MERGED。コードcheckpoint Agentbd8e70ba88fe2e0e5c8af43379d31651a7594088 / Server5a9cdb3eccff47aa065e7078f4d072c8a6fe28c1。Agent[最終報告PR34](https://github.com/zawa356/RomRaider_agent/pull/34)でreport/worklog/進捗を最新化。
+- Agent mainCI38498047914 attempt1はWindows SQLite依存JAR取得が両Maven endpointでHTTP404、実SQLite/native-following steps NOT RUN/SKIPPEDでFAIL。原本/コード不具合を示すログではなかった。同一version/条件でretryしattempt2全3jobs/実steps success、失敗を隠さずAgent worklogへ保存。
+- merged mainのCloudPC VPS実試験 journal222+SQLite/receipt344=566 PASS。Windows17/x64594 unique checks、actual Zulu8 1.8.0_504/x86subset154、WSLlegacy44 PASS。x86 SQLite/full旧watermark56/実Agent→PostgresE2E/物理電源断/X270/ECUはNOT RUN。
+- Server mainCI38498052348のunit/compose/SQL round-trip適用steps success。これを実Agent E2Eと呼ばない。最終docs-only merge後のmain SHAは再取得する。
+- native NTFS candidateのID/read/write/flush same-handle primitivesは成立。旧RLC1 Windows/full56、dir同期UNCONFIRMED、新identity-tag/marker version、永続expected ledger/highwater/receipt同transaction、seal/rotation、製品ライブ配線は未成立。次の安全な作業は別Phase3bの独立marker設計・負試験。
+- CloudPCサービスread-only確認：caddy/ssh active、mcp-ssh/ssh-mcp-chatgpt running。試験Java子プロセス残存なし、既存サービス設定/認証/本番DB変更なし。
+- 詳細・正確な再開コマンド：[Agent日中report](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_daytime_report.md)、[追記worklog](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_daytime_worklog.md)。
