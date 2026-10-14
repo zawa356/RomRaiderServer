@@ -378,3 +378,11 @@
 - native NTFS candidateのID/read/write/flush same-handle primitivesは成立。旧RLC1 Windows/full56、dir同期UNCONFIRMED、新identity-tag/marker version、永続expected ledger/highwater/receipt同transaction、seal/rotation、製品ライブ配線は未成立。次の安全な作業は別Phase3bの独立marker設計・負試験。
 - CloudPCサービスread-only確認：caddy/ssh active、mcp-ssh/ssh-mcp-chatgpt running。試験Java子プロセス残存なし、既存サービス設定/認証/本番DB変更なし。
 - 詳細・正確な再開コマンド：[Agent日中report](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_daytime_report.md)、[追記worklog](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_daytime_worklog.md)。
+
+## 2026-10-14 — 最終レビュー追加Phase 3a-writer-integrity / D-044
+
+- [Agent PR36](https://github.com/zawa356/RomRaider_agent/pull/36)でprivate TEST native writerのpost-flush new frame照合を強化。flush直後にpayload x→yとCRCを再計算すると、old prefix/CRC/sequenceだけでは誤ったmemory Proofを返す不足をレビューで発見。製品/marker/DB/ACKへ配線しておらず影響は候補fixture内。
+- RED213fd22 CI38499434376/rawjob115642618293でWindows17/x64 AssertionErrorを実再現。x86 REDはx64 baseline失敗でSKIPPED/NOT RUN、Linux回帰success。
+- Fixc72ad0d：owned handleのpost-flush new frameをWriteFileへ渡したexact bytesと照合し、改変はProof拒否/terminal latch/CRC-valid原本保全。CI38499593483全3jobs success、raw115643128338/115643128598で実確認。
+- 最新x64writer46/actualZulu8 1.8.0_504 x86writer47 PASS。combined Windows17/x64596、x86subset156、Linux566。旧594/154/writer44/45は当時のfixture範囲で、この新負試験の成功ではない。最新docs-head/main統合は後続記録。
+- 4小Phase（比較/compat/nativewriter/integrity）まで。RLC1 Windows full56/dirUNCONFIRMED、新marker version/永続expected ledger/highwater/rotationのゲートは変わらない。次は別Phase3bのtest-only設計。
