@@ -394,3 +394,12 @@
 - Agent[日中report](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_daytime_report.md)/worklogを最新化。最終metadata docs/daytime-integrity-finalは実行コード変更なしでpublished HEADは再取得する。
 - 3b新版marker設計・独立負試験が次。RLC1Windows full56 NOT RUN/BLOCKED、dirUNCONFIRMED、新identity-tag/expected ledger/atomic highwater/receipt/rotation/実機/製品配線の未成立を維持。
 - Product code/protocol/DB/Logger/サービス/認証は変更なし。RED213fd22/CI38499434376とfixc72ad0d/GREEN/merged mainまでGitで追跡可能。
+
+## 2026-10-18 — Agent Phase 3b / 3c-1 / 3d-1（Claude、Windows開発VM）独立PoC
+
+- Agent [PR39](https://github.com/zawa356/RomRaider_agent/pull/39)（3b RLC2）、[PR40](https://github.com/zawa356/RomRaider_agent/pull/40)（3c-1 ledger）、[PR41](https://github.com/zawa356/RomRaider_agent/pull/41)（3d-1 rotation）をMERGED。最終Agent mainは `512c8b7`。すべて`src/main/.../prototype`と試験に閉じており、**製品writer・Worker・`v1_*`表・Server IF/ACKへは配線していない**。
+- 3b: 新marker RLC2（identity tag付き。RLC1は読み替えない）。PR CIでWindows x64 96 / Linux POSIX 94 / actual Zulu8 x86 97 PASS。Windows directory durabilityは**UNKNOWN**のまま。
+- 3c-1: expected identity・highwater・原文receiptを同一SQLite transactionで管理し、3bの反例（stale marker、偽造コピー）をclaim済みsourceで拒否。ledger 27/27/28 PASS。receiptはACK対象外。
+- 3d-1: seal、RLM1 manifest、16本quota（明示停止、削除なし）、manifest順のsession ingest。rotation 43/43/44 PASS。
+- Server側: 本repoのコード・プロトコル・DBは変更なし。ローカル（Windows VM、PostgreSQL 16.15）で pytest 57 passed。[Server PR48](https://github.com/zawa356/RomRaiderServer/pull/48)でE2E生成物を.gitignoreへ追加。
+- 残るゲート: Windows directory durability、物理電源断・OS再起動、製品`v1_source_claims`とsession契約への統合、RLC1からの移行、実機。詳細は [Agent report](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/claude_phase3b_report.md)。
