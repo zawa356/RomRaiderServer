@@ -417,3 +417,12 @@
 
 Agent merge 77089a368d3c562bb5b5e8f01ae9e4e6ba90c606. PR CI journal39091138681/spool39091138687 success; real diagnostic steps Linux/Windows and actual Zulu8 x86 step all success. Agent post-merge CI pending. Local Server PostgreSQL16.15 regression: 57 passed (compileall, upgrade twice, check also exit0). Earlier pending entries are historical checkpoints.
 
+
+## 2026-10-18 11:55:55 +09:00 — acceleration Phase C (Agent PR44, CI pending)
+
+- Agent PR44 https://github.com/zawa356/RomRaider_agent/pull/44 adds executable opt-in synthetic RLC2-to-v1 projection, reusing existing IncrementalTsvBridge conversion via a no-I/O sink. Input RLC2 markers must exactly match persisted ledger highwaters/receipts; manifest order preserves metadata; sample sequence/session reset and TSV conflicts are refused.
+- Projection returns source UUID/identity/highwater, original receipts and v1 profile/record JSON in memory only. No product DB/outbox, Worker or HTTP/ACK route is activated. Windows directory durability UNKNOWN retained.
+- Current v1_source_claims stores one source key per payload session; physical rotation has multiple UUIDs. Direct product claim/cursor migration remains BLOCKED; Phase D will use dedicated preview tables for a manifest-session and child source claims.
+- Local projection Windows17 x64 20, Zulu8 x86 21, VPS Linux17 20 checks PASS; exact comparison against separately invoked legacy importer JSON/IDs/profile. Existing full product spool regressions PASS on Windows and VPS; diagnostics remain 34/35/34. PR CI pending.
+- Previous Phase B Agent main CI39091295337/39091295292 and Server main CI39091434142 all success.
+
