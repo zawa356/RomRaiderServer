@@ -471,3 +471,12 @@ Journal39093449838 all four jobs success, including actual Windows/Linux preview
 
 Actual local Windows batch build/acceleration-20261018-124526.log exited0 with x64/x86, existing regressions, diagnostics35/projection21/preview35/fault37 on each explicit architecture, three destination guards, two PG preview connections and actual Server models. Local symlink fixture and old Windows RLC1 56 scenarios remain NOT RUN/BLOCKED. PR47 journal39094810643 all four jobs success (PowerShell wrapper actually ran, Linux/hash-locked PG ran), product39094810652 success. Existing HTTP E2E gated success remains separate. Normal merge requested; main proof follows in worklog.
 
+
+## 2026-10-18 13:19:41 +09:00 — acceleration Phase G (Agent PR48, final CI pending)
+
+- Read-only findings add fixed manual next_action and automatic repair false; source-only RLC1/RLC2 preflight reuses existing codec and validates observed envelope/UUID/prefix/frames without ledger/marker creation, migration or fileKey→native reinterpretation. Mixed legacy/new markers block projection; ledger lag/pending state are distinct from corruption. Existing original/durability/ACK gates retained.
+- Final local preflight Windows x64 18 / actual Zulu8 x86 19 PASS. Default1000-observation/4-session workload23 checks, larger10000+10 small sessions44 Linux/45 actual x86 PASS:10100 records/10111 receipts/22 cursors/11 logical claims, exact highwaters, duplicate-free replay and input bytes.
+- Identical lowercase hex now avoids per-byte Formatter. New x64 inspector validated10001 original-formatter x86 receipts unchanged. Full cold-process before/after tables include all phases/variance in Agent ingress_preflight_load.md; no throughput/power-loss guarantee. Larger replay observed VPS2086→939ms, x8611433→5010ms.
+- Agent PR48 final CI pending. Current product v1 single-source claim/cursor migration and Windows directory durability/formal new-path ACK remain blocked; executable preview and diagnostics are complete.
+- Phase F main Agent39095250378/39095250377 and Server39095397003 success. Next: PR/main CI, final acceleration report and synchronized resume point.
+
