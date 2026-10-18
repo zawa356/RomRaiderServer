@@ -431,3 +431,12 @@ Agent merge 77089a368d3c562bb5b5e8f01ae9e4e6ba90c606. PR CI journal39091138681/s
 
 Agent merge b862651902ad25dc86a3233c00df77dddcaa3919. PR CI39091762536/39091762488 all applicable Linux/Windows/Zulu8 x86 steps success. Existing real-Server workflow39091762524 is gated success with actual REAL Agent→FastAPI→PostgreSQL step SKIPPED (missing private-repo read secret), not E2E PASS. Agent main CI39091939531/39091939477 pending. No formal ACK route added to projection.
 
+
+## 2026-10-18 12:12:07 +09:00 — acceleration Phase D (Agent PR45, CI pending)
+
+- Agent PR45 https://github.com/zawa356/RomRaider_agent/pull/45 adds dedicated RLP1 .rlc2-preview.db output, preview-only schemas and explicit synthetic CLI. One IMMEDIATE transaction persists manifest history, one logical session claim plus child sources, original receipts, highwater and unchanged v1 JSON. SQL forbids ACK eligibility; no production v1 table, Worker, Server endpoint or original mutation.
+- Replay verifies immutable fields, prior row counts and manifest history. Missing/tampered rows fail closed without reconstruction. Test covers foreign/renamed product DB refusal, original bytes, rollback of all six tables, separate-JVM CLI replay, lane conflict and durable history.
+- Local Windows final preview34 PASS; earlier x8632/Linux31 before three final missing-record/schema cases (final versions in CI). Linux CLI compile omission RED reproduced and fixed. Destination guard3 tests PASS. Local PostgreSQL16.15 two committed/reconnected passes verify two sources/four receipts/one profile/three records, exact receipts/JSON, no duplicates, rollback and ACK constraint. Actual Server ProfileRevision/Batch models validate locally without HTTP.
+- New isolated PostgreSQL16 CI job executes this preview path without private Server checkout; actual Server model validation is explicitly NOT RUN there. Existing HTTP E2E remains separately gated/SKIPPED without its secret. Latest PR CI pending; initial push Linux+PostgreSQL jobs already success.
+- Phase C Agent main CI39091939531/39091939477 and Server main39092090529 success. Next: final PR/main CI, then dedicated abrupt-stop/competition fault tests (not yet claimed by Phase D).
+
