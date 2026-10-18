@@ -466,3 +466,8 @@ Journal39093449838 all four jobs success, including actual Windows/Linux preview
 - Full local batch found an intermittent existing Windows concurrent replace denial. Preserved old/staged/original hashes valid; exact denying handle unknown. Test-only correction verifies exact preservation/reader refusal and logs full25-progress BLOCKED when refused, while successful path still requires finalgen26. Deterministic held-marker reader case added; native101 PASS. Core publisher/retry semantics unchanged; fresh native compilation avoids stale common classes.
 - Full corrected batch and final CI running. Agent/Server current production runtime/DB are unchanged. Phase E main39093698538/39093698530 and Server39093791658 success.
 
+
+### 2026-10-18 12:54:25 +09:00 — Phase F local complete batch and PR CI PASS
+
+Actual local Windows batch build/acceleration-20261018-124526.log exited0 with x64/x86, existing regressions, diagnostics35/projection21/preview35/fault37 on each explicit architecture, three destination guards, two PG preview connections and actual Server models. Local symlink fixture and old Windows RLC1 56 scenarios remain NOT RUN/BLOCKED. PR47 journal39094810643 all four jobs success (PowerShell wrapper actually ran, Linux/hash-locked PG ran), product39094810652 success. Existing HTTP E2E gated success remains separate. Normal merge requested; main proof follows in worklog.
+
