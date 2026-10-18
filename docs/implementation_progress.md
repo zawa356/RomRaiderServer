@@ -426,3 +426,8 @@ Agent merge 77089a368d3c562bb5b5e8f01ae9e4e6ba90c606. PR CI journal39091138681/s
 - Local projection Windows17 x64 20, Zulu8 x86 21, VPS Linux17 20 checks PASS; exact comparison against separately invoked legacy importer JSON/IDs/profile. Existing full product spool regressions PASS on Windows and VPS; diagnostics remain 34/35/34. PR CI pending.
 - Previous Phase B Agent main CI39091295337/39091295292 and Server main CI39091434142 all success.
 
+
+### 2026-10-18 11:58:44 +09:00 — Agent PR44 merged / PR CI verified
+
+Agent merge b862651902ad25dc86a3233c00df77dddcaa3919. PR CI39091762536/39091762488 all applicable Linux/Windows/Zulu8 x86 steps success. Existing real-Server workflow39091762524 is gated success with actual REAL Agent→FastAPI→PostgreSQL step SKIPPED (missing private-repo read secret), not E2E PASS. Agent main CI39091939531/39091939477 pending. No formal ACK route added to projection.
+
