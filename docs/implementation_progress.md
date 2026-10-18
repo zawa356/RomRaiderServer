@@ -453,3 +453,8 @@ PR journal39092722886 includes actual Linux/Windows preview SQLite, Zulu8 x86 an
 - Local fault tests Windows17 x64 36 / actual Zulu8 x86 37 / VPS Linux17 36 PASS. Preview regression34/35/34 PASS. Physical power loss/real ENOSPC NOT RUN. Operator dry-run/retry boundary documented; CI pending.
 - Phase D Agent main39092940711/39092940692 and Server main39093054991 success; preview final CI counts34/35/34 verified from raw logs.
 
+
+### 2026-10-18 12:27:44 +09:00 — Agent PR46 CI all success / normal merge requested
+
+Journal39093449838 all four jobs success, including actual Windows/Linux preview/fault runs, actual Zulu8 x86 and PostgreSQL verification. Product39093449961 success. RED/owned-output fix and manual dry-run procedures reviewed. Input diagnostics were not relaxed. Agent main merge/CI checkpoint will follow in the worklog.
+
