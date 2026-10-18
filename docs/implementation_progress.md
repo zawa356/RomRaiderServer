@@ -445,3 +445,16 @@ Agent merge b862651902ad25dc86a3233c00df77dddcaa3919. PR CI39091762536/390917624
 
 PR journal39092722886 includes actual Linux/Windows preview SQLite, Zulu8 x86 and private PostgreSQL16 receipt/replay/rollback/ACK-refusal steps, all success. Product regression39092722876 success. Existing HTTP E2E39092722883 gated success with actual HTTP step SKIPPED; new PG preview step ran. Agent main merge/CI evidence follows in acceleration worklog. Final preview scenario counts verified in CI; local final Windows34 and initial x8632/Linux31 history distinguished above.
 
+
+## 2026-10-18 12:24:05 +09:00 — acceleration Phase E (Agent PR46, CI pending)
+
+- Agent PR46 https://github.com/zawa356/RomRaider_agent/pull/46 reproduces/fixes abrupt preview restart failure. RED778757d: own rollback journal was refused by immutable input preflight. Fix permits only SQLite-managed recovery of positively identified RLP1 output (safe regular journal/header/identity/no unexpected WAL), then verifies owned schema. Immutable input ledger/original rules unchanged; no manual journal removal or ACK route.
+- Four separate-JVM halt stages verify all-or-none receipt/record state and exact replay. Competing CLI workers, exclusive DB lock/no-ACK review, real SQLite ABORT with six-table rollback, original-byte preservation and foreign product DB+journal refusal are covered.
+- Local fault tests Windows17 x64 36 / actual Zulu8 x86 37 / VPS Linux17 36 PASS. Preview regression34/35/34 PASS. Physical power loss/real ENOSPC NOT RUN. Operator dry-run/retry boundary documented; CI pending.
+- Phase D Agent main39092940711/39092940692 and Server main39093054991 success; preview final CI counts34/35/34 verified from raw logs.
+
+
+### 2026-10-18 12:27:44 +09:00 — Agent PR46 CI all success / normal merge requested
+
+Journal39093449838 all four jobs success, including actual Windows/Linux preview/fault runs, actual Zulu8 x86 and PostgreSQL verification. Product39093449961 success. RED/owned-output fix and manual dry-run procedures reviewed. Input diagnostics were not relaxed. Agent main merge/CI checkpoint will follow in the worklog.
+
