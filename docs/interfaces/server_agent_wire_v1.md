@@ -295,3 +295,7 @@ HTTP契約の基本的意味論とURIをv1設計選択として置いたが、**
 | 日付 | 版 | 内容 |
 | --- | --- | --- |
 | 2026-10-12 | 0.2.0 | 委任を受け、通信の初版設計選択を具体化。HTTP/JSON、原子的バッチACK、UUID、定義先行同期、初版トークン認証、誤ACK防止と結合試験を明文化 |\n| 2026-10-12 | 1.0.0 | OpenAPIおよび詳細設計との整合を確認し設計ベースライン化。機能実装は別工程 |
+
+## Agent-local RLC2 integration candidate
+
+The versioned local multi-source storage contract is documented in [rlc2_integration_v2.md](rlc2_integration_v2.md). It changes no wire-v1 field, Server schema or ACK meaning. Candidate test responses must not be reflected into Agent persistent ACK state.
