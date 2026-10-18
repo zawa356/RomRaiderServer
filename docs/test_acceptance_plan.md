@@ -156,3 +156,13 @@ D0と他の段階は異なる。**設計書をmainへ置くことだけでD1〜D
 ## 10. リリースを止める条件
 
 原本未保存なのにACKを返す、未ACKを自動削除する、合成と実ECUを混同する、他車両のデータが漏洩する、無許可ECU操作が成立する、期限切れコマンドが無条件に実行される、実車で未検証の走行中切替を自動有効化する――これらはいずれも設計目的に反する重大な不具合として扱い、原因解消・回帰試験まで公開運用を停止する。
+
+## Phase I candidate acceptance extension
+
+- PI-01: isolated versioned SQLite initialization/reexecution/migration rollback, legacy v1 byte/ACK preservation and lane conflict.
+- PI-02: exact canonical logical session/explicit physical-source admissions, all8-table atomicity, rotation, duplicate replay and unknown-past-row refusal.
+- PI-03: deterministic source/marker/manifest/ledger/legacy/tail changes between projection and commit reject output without repair; external quiescence mandatory.
+- PI-04: actual old-v0 DDL compatibility; missing columns/constraints/PK/UNIQUE/FK/types, indexes/trigger/view/object/version/header corruption rejected unchanged. SQL token boundaries remain distinct.
+- PI-05: actual Server HTTP/private PG commit, identical batch duplicates,409/422, profile refs, unavailable DB endpoint503, actual transaction failure, committed response dropped before client ACK, one run across rotation and Agent ACK bytes unchanged.
+- PI-06: actual child-JVM halt at4stages, separate worker convergence, existing native UUID/copy/CRC/8MiB/16segment cases, bounded multi-session candidate replay.
+- PI-07: actual Windows64/Zulu8x86 and Linux suites, optional one-command HTTP, clear PASS/NOT RUN. Actions currently cannot schedule; user authorizes local/VPS review basis. This does not relax physical durability or production enablement gates.
