@@ -403,3 +403,12 @@
 - 3d-1: seal、RLM1 manifest、16本quota（明示停止、削除なし）、manifest順のsession ingest。rotation 43/43/44 PASS。
 - Server側: 本repoのコード・プロトコル・DBは変更なし。ローカル（Windows VM、PostgreSQL 16.15）で pytest 57 passed。[Server PR48](https://github.com/zawa356/RomRaiderServer/pull/48)でE2E生成物を.gitignoreへ追加。
 - 残るゲート: Windows directory durability、物理電源断・OS再起動、製品`v1_source_claims`とsession契約への統合、RLC1からの移行、実機。詳細は [Agent report](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/claude_phase3b_report.md)。
+
+## 2026-10-18 11:45:42 +09:00 — acceleration Phase A/B (Agent PR43, CI pending)
+
+- Agent targeted review of PR39–41 found no new critical core defect; existing POSIX path-sampled identity/Windows directory durability UNKNOWN/TOFU/history limitations retained.
+- Read-only RLC2/SQLite/RLM1 Supervisor diagnostics API and human/JSON CLI implemented in Agent PR43: https://github.com/zawa356/RomRaider_agent/pull/43 . Stable codes cover orphan/tmp, stale marker, identity, manifest, highwater/receipt/claim, quota, durability UNKNOWN and sealed changes.
+- SQLite mode=ro alone created WAL/SHM in RED test. Inspector now requires externally quiesced closed checkpointed snapshots, refuses WAL/SHM/journal and opens immutable read-only. No automatic repair/checkpoint, no ACK authority.
+- Local real SQLite diagnostics: Windows JDK17 x64 34 PASS; actual Zulu8 x86 35 PASS; VPS Ubuntu24.04 JDK17 34 PASS. Existing VPS ledger27+rotation43 PASS. CI pending; main integration not yet complete.
+- Product v1 Worker, production DB and Server wire protocol unchanged. Next: CI step verification and normal merge, then opt-in isolated adapter/E2E. Agent acceleration worklog is the resume entry point.
+
