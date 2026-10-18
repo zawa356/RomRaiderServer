@@ -168,3 +168,14 @@
 | 日付 | 版 | 内容 |
 | --- | --- | --- |
 | 2026-10-12 | 0.1.0 | RLG-SRSの全FR/NFR/VAL IDを自動抽出し、設計と検証観点へ対応付け |\n| 2026-10-12 | 1.0.0 | 各詳細設計・受入計画への追跡リンクを追加 |
+
+## Phase I isolated integration evidence (2026-10-18)
+
+| Requirement area | Implemented candidate / executable evidence | Limit |
+|---|---|---|
+| FR-DATA / FR-RES source provenance and restart | Agent Rlc2IntegrationStore/Schema, exact source admissions, receipt/cursor/record transaction, child-JVM recovery and concurrent processes | Offline synthetic opt-in; no production migration or ACK |
+| FR-DATA definition and idempotency | Actual loopback Server HTTP + private PostgreSQL schema, definition registration, replay/409/422/refs/response loss | Test ACK never modifies Agent persistent state |
+| NFR integrity / FR-RES diagnostics | Snapshot changes roll back, strict schema/constraint/object/version checks, independent Supervisor integrity/durability/ACK axes | Quiescence required; directory durability UNKNOWN, no physical-power-loss proof |
+| FR-SEC isolation | Strict destination opt-ins, private invocation schema, synthetic credentials, loopback owned sockets, guard negative tests | Existing production services/DB untouched |
+
+These are limited synthetic acceptance results, not completion of every requirement in the rows above. Full per-platform results and NOT RUN items belong to the Agent Phase I report; actual Server source regression57 passed locally. GitHub scheduling is currently unavailable, so local verification is the user-authorized basis.
