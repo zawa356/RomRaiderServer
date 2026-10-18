@@ -480,3 +480,10 @@ Actual local Windows batch build/acceleration-20261018-124526.log exited0 with x
 - Agent PR48 final CI pending. Current product v1 single-source claim/cursor migration and Windows directory durability/formal new-path ACK remain blocked; executable preview and diagnostics are complete.
 - Phase F main Agent39095250378/39095250377 and Server39095397003 success. Next: PR/main CI, final acceleration report and synchronized resume point.
 
+
+## 2026-10-18 — acceleration Phase H checkpoint integrity
+
+- Agent PR49 https://github.com/zawa356/RomRaider_agent/pull/49 reproduces unchanged-count event-key replacement (RED b032e04). The previous preview replay inserted the original key again. Fix ec1e5bd independently validates saved source receipt extents, ordered committed prefix and exact prior projected record IDs before writes; inconsistent evidence is retained for review. No product DB schema migration, automatic reconstruction or ACK enablement.
+- New negative tests cover changed event key, missing committed records/receipts with adjusted aggregate counters, and exact evidence preservation. Positive active-source append and third-source rotation still import only new rows. Windows x64 preview42/fault36/load23 and VPS Linux42/36/23 PASS; VPS10k/11-session load44 PASS. Actual x86 CI preview43/fault37/load24 PASS; local x86 final suite completing.
+- Agent PR49 journal39097642181 (all four jobs) and product39097642133 success. Actual PG verification ran; actual private Server HTTP remains gated/SKIPPED, not counted as new-path ACK. Agent main result follows in final report.
+- Phase G Agent PR48 merged33875a2e86dabb91f8b3a93441192595a2a7d08f; main39097392309/39097392286 success. Server PR55 mergedaf30941a4f0128a448389e3dd48d5003191bd2cd; main39097403278 success.
