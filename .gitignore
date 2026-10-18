@@ -8,3 +8,7 @@ __pycache__/
 *.db
 *.sqlite3
 .coverage
+
+# Build-only outputs of the pinned Agent E2E fixture (prepare-agent-e2e.sh)
+tests/e2e/agent_v1_snapshot/build/
+tests/e2e/agent_v1_snapshot/lib/
