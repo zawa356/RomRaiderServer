@@ -458,3 +458,16 @@ PR journal39092722886 includes actual Linux/Windows preview SQLite, Zulu8 x86 an
 
 Journal39093449838 all four jobs success, including actual Windows/Linux preview/fault runs, actual Zulu8 x86 and PostgreSQL verification. Product39093449961 success. RED/owned-output fix and manual dry-run procedures reviewed. Input diagnostics were not relaxed. Agent main merge/CI checkpoint will follow in the worklog.
 
+
+## 2026-10-18 12:46:10 +09:00 — acceleration Phase F (verification running)
+
+- Agent automation branch pins Java jar SHA256, CPython3.12 Win/Linux x64 PostgreSQL wheels/transitives, and an observed passing PostgreSQL image digest. New Windows one-command wrapper compiles JDK17 Java8 bytecode, executes actual x64/x86 suites, restores environment, logs ignored results and optionally runs strict loopback PG/actual Server model validation. Actual x86 CI job invokes the wrapper. CI checks artifacts/source changes and cancels duplicate push/PR head-branch runs.
+- Fresh isolated Python hash install PASS; wrong wheel hash rejected. Valid wrong JAR fixture replaced only after pinned SQLite checksum. Initial YAML command quoting failure fixed (block scalar).
+- Full local batch found an intermittent existing Windows concurrent replace denial. Preserved old/staged/original hashes valid; exact denying handle unknown. Test-only correction verifies exact preservation/reader refusal and logs full25-progress BLOCKED when refused, while successful path still requires finalgen26. Deterministic held-marker reader case added; native101 PASS. Core publisher/retry semantics unchanged; fresh native compilation avoids stale common classes.
+- Full corrected batch and final CI running. Agent/Server current production runtime/DB are unchanged. Phase E main39093698538/39093698530 and Server39093791658 success.
+
+
+### 2026-10-18 12:54:25 +09:00 — Phase F local complete batch and PR CI PASS
+
+Actual local Windows batch build/acceleration-20261018-124526.log exited0 with x64/x86, existing regressions, diagnostics35/projection21/preview35/fault37 on each explicit architecture, three destination guards, two PG preview connections and actual Server models. Local symlink fixture and old Windows RLC1 56 scenarios remain NOT RUN/BLOCKED. PR47 journal39094810643 all four jobs success (PowerShell wrapper actually ran, Linux/hash-locked PG ran), product39094810652 success. Existing HTTP E2E gated success remains separate. Normal merge requested; main proof follows in worklog.
+
