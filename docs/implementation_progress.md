@@ -412,3 +412,8 @@
 - Local real SQLite diagnostics: Windows JDK17 x64 34 PASS; actual Zulu8 x86 35 PASS; VPS Ubuntu24.04 JDK17 34 PASS. Existing VPS ledger27+rotation43 PASS. CI pending; main integration not yet complete.
 - Product v1 Worker, production DB and Server wire protocol unchanged. Next: CI step verification and normal merge, then opt-in isolated adapter/E2E. Agent acceleration worklog is the resume entry point.
 
+
+### 2026-10-18 11:47:00 +09:00 — Agent PR43 merged, PR CI verified
+
+Agent merge 77089a368d3c562bb5b5e8f01ae9e4e6ba90c606. PR CI journal39091138681/spool39091138687 success; real diagnostic steps Linux/Windows and actual Zulu8 x86 step all success. Agent post-merge CI pending. Local Server PostgreSQL16.15 regression: 57 passed (compileall, upgrade twice, check also exit0). Earlier pending entries are historical checkpoints.
+
