@@ -440,3 +440,8 @@ Agent merge b862651902ad25dc86a3233c00df77dddcaa3919. PR CI39091762536/390917624
 - New isolated PostgreSQL16 CI job executes this preview path without private Server checkout; actual Server model validation is explicitly NOT RUN there. Existing HTTP E2E remains separately gated/SKIPPED without its secret. Latest PR CI pending; initial push Linux+PostgreSQL jobs already success.
 - Phase C Agent main CI39091939531/39091939477 and Server main39092090529 success. Next: final PR/main CI, then dedicated abrupt-stop/competition fault tests (not yet claimed by Phase D).
 
+
+### 2026-10-18 12:14:56 +09:00 — PR45 CI success / normal merge requested
+
+PR journal39092722886 includes actual Linux/Windows preview SQLite, Zulu8 x86 and private PostgreSQL16 receipt/replay/rollback/ACK-refusal steps, all success. Product regression39092722876 success. Existing HTTP E2E39092722883 gated success with actual HTTP step SKIPPED; new PG preview step ran. Agent main merge/CI evidence follows in acceleration worklog. Final preview scenario counts verified in CI; local final Windows34 and initial x8632/Linux31 history distinguished above.
+
