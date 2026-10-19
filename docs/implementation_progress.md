@@ -533,7 +533,7 @@ Agent PR60–68 normally merged; final implementation main `ca9cfe06d774261be05d
 
 ## 2026-10-19 Phase III Agent配置・切替診断・隔離copy受入
 
-Agent [PR70](https://github.com/zawa356/RomRaider_agent/pull/70)/[71](https://github.com/zawa356/RomRaider_agent/pull/71)/[72](https://github.com/zawa356/RomRaider_agent/pull/72)を取込済み、追加 [PR73](https://github.com/zawa356/RomRaider_agent/pull/73) は draft・最終Windows受入中（未merge）。Agent実装main `f8b428e2333e0d88ac554ace5df7599a35b965d0`、最終候補コード検証head（受入進行中） `ed8efd6e6195418feffe77224ef61f2116a6db7b`。
+Agent [PR70](https://github.com/zawa356/RomRaider_agent/pull/70)/[71](https://github.com/zawa356/RomRaider_agent/pull/71)/[72](https://github.com/zawa356/RomRaider_agent/pull/72)を取込済み、追加 [PR73](https://github.com/zawa356/RomRaider_agent/pull/73) は 通常merge済み（2026-10-19T14:56:03+09:00）。Agent実装main `c206282119c424c3dd15c66b5cddfb5713d69fac`、最終コード検証head `ed8efd6e6195418feffe77224ef61f2116a6db7b`。
 
 - RLDB1はpaired root/旧DB anchorとcanonical identity/ACL/owner/single-hardlink検査を持つ固定Session用の合成候補。read-only deployment/cutover/copy-state CLIとRLI2 bound entry、RLBA1 inactive copied-target受入、RMI1 schema-reference cleanupと全旧表/rowid/ACK/receipt/claim/cursor/実retry/review状態保全を実装。
 - 同一DB別root、target DB alias、recovery WAL alias（別DBを変更し得たRED）をwritable open前に拒否。RMI1の6境界子JVM halt、SQLite busy/source変更、partial backup/full rehearsalを受入。SQL COMMITとWAL/checkpoint完了を混同しない。
