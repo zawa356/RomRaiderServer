@@ -530,3 +530,15 @@ Agent PR60–68 normally merged; final implementation main `ca9cfe06d774261be05d
 - Real owned Uvicorn/FastAPI/PostgreSQL HTTP35 PASS including409/422, committed response loss/retry, DB failure and owned PG immediate-stop/restart503/noACK. Agent bytes/ACK unchanged. Server current regression migration-upgrade twice/check and pytest57 PASS,1warning (`server-pytest-20261019-094046.log`). Server runtime/API/migrations are unchanged by this PR.
 - Latest Agent Actions39182473844 payment/spending-limit annotation: all jobs steps=[]; **CI NOT RUN (runner not started)**. No billing changes or redispatch; authorized local/VPS verification and review are merge basis.
 - Gates retained: production migration, old unknown importers/noncooperative Writers/restored parallel roots and live ECU/Logger integration are not enabled; new formal ACK/auto-send disabled. Windows directory durability UNKNOWN; physical power loss/realENOSPC/X270/ECU NOT RUN. Root test.sh missing RomRaider.jar, local privileged symlinks and old Windows RLC1 full56 remain NOT RUN/BLOCKED. Existing Docker14 Up, existing PG55432ready, own PG stopped, no remaining VPS test JVM.
+
+## 2026-10-19 Phase III Agent配置・切替診断・隔離copy受入
+
+Agent [PR70](https://github.com/zawa356/RomRaider_agent/pull/70)/[71](https://github.com/zawa356/RomRaider_agent/pull/71)/[72](https://github.com/zawa356/RomRaider_agent/pull/72)を取込済み、追加 [PR73](https://github.com/zawa356/RomRaider_agent/pull/73) は draft・最終Windows受入中（未merge）。Agent実装main `f8b428e2333e0d88ac554ace5df7599a35b965d0`、最終候補コード検証head（受入進行中） `ed8efd6e6195418feffe77224ef61f2116a6db7b`。
+
+- RLDB1はpaired root/旧DB anchorとcanonical identity/ACL/owner/single-hardlink検査を持つ固定Session用の合成候補。read-only deployment/cutover/copy-state CLIとRLI2 bound entry、RLBA1 inactive copied-target受入、RMI1 schema-reference cleanupと全旧表/rowid/ACK/receipt/claim/cursor/実retry/review状態保全を実装。
+- 同一DB別root、target DB alias、recovery WAL alias（別DBを変更し得たRED）をwritable open前に拒否。RMI1の6境界子JVM halt、SQLite busy/source変更、partial backup/full rehearsalを受入。SQL COMMITとWAL/checkpoint完了を混同しない。
+- 今回のServer独立実行: 専用loopback PostgreSQL16.15でupgrade二度/check成功、pytest57 passed/1 warning。Agent候補の実FastAPI/owned PG HTTP35 PASS、試験ACKでAgent bytes/ACK不変。既存PG/稼働サービスを停止していない。Server runtime/schema/wire v1は変更しない。
+- Windows17 x64/actual Zulu8 x86/Linux17検証と証跡は [Agent Phase III報告](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/codex_phase3_report.md) / [証跡](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/phase3_validation_evidence.md)。CIは最新job steps=[]、account payment/spending limitでrunner未開始のCI NOT RUN。課金変更・再dispatchなし。
+- **未成立:** RLDB1 manifest置換/次Session/復元rebind authority、完全なprocess/distribution provenance、clone/別host/networkFS global fencing、RMI1→RLI2 physical receipt/record mappingと本番cutover/rollback。固定配置とlow-level multi-session loadを同じ受入としない。Windows directory durability UNKNOWN。実車/X270/OpenPort/ECU、物理電源断/実ENOSPC、正式ACK/本番migration/自動Worker切替はNOT RUN/無効。
+
+次回は [Bootstrap](https://github.com/zawa356/RomRaider_agent/blob/main/docs/ops/development_environment_bootstrap.md) → Phase III報告 → 両repo最新main/PR/進捗から再開する。本節はServer製品機能の追加や本番受入を意味しない。
