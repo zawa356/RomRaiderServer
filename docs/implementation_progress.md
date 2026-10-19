@@ -545,8 +545,8 @@ Agent [PR70](https://github.com/zawa356/RomRaider_agent/pull/70)/[71](https://gi
 
 ## 2026-10-19 Phase IV Agent独立レビュー・versioned rebind・provenance・旧v1分類（Server変更なし）
 
-- Agent側では、stacked PR [#75](https://github.com/zawa356/RomRaider_agent/pull/75)→[#76](https://github.com/zawa356/RomRaider_agent/pull/76)→[#77](https://github.com/zawa356/RomRaider_agent/pull/77)→[#78](https://github.com/zawa356/RomRaider_agent/pull/78)→IV-5 で、独立レビューの修正（Windows RLDB1 identityのHigh欠陥ほか）、RLDT1/RLDB2のversioned transition、RLAP1のprovenance、RLPC1の旧v1分類と隔離stagingを追加した。すべて合成専用のopt-in候補で、本執筆時点ではOPEN（merge待ち）。
+- Agent側では、stacked PR [#75](https://github.com/zawa356/RomRaider_agent/pull/75)→[#76](https://github.com/zawa356/RomRaider_agent/pull/76)→[#77](https://github.com/zawa356/RomRaider_agent/pull/77)→[#78](https://github.com/zawa356/RomRaider_agent/pull/78)→IV-5 で、独立レビューの修正（Windows RLDB1 identityのHigh欠陥ほか）、RLDT1/RLDB2のversioned transition、RLAP1のprovenance、RLPC1の旧v1分類と隔離stagingを追加した。すべて合成専用のopt-in候補。2026-10-19、ユーザーの承認を受けてAgent mainへmergeした（#75 `2e6825c`、#76 `d95950c`、#77 `a76b35c`、#78 `dca2f4d`、#79 `4f80c5e`）。
 - Server側の変更は、この文書だけ。runtime・schema・wire v1・migrationは変更していない。Agentが新たに導入した記録（RLDT1/RLDB2/RLAP1/RLPC1/RLLV1）はAgent内部のものであり、Serverの正式ACKや受信APIには接続していない。
 - Server main `bb27cd1` を、専用のloopbackテストDBで再検証した。migration upgradeの2回実行とcheckがexit0、pytest 57 passed（warning 1件）。
-- 詳細は [Agent Phase IV報告](https://github.com/zawa356/RomRaider_agent/blob/phase4/iv5-handoff/docs/handoff/phase4_report.md) と [証跡](https://github.com/zawa356/RomRaider_agent/blob/phase4/iv5-handoff/docs/handoff/phase4_validation_evidence.md) を参照（Agent側のmerge後はmainのpathで読む）。CI NOT RUN（runner未起動）。
+- 詳細は [Agent Phase IV報告](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/phase4_report.md) と [証跡](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/phase4_validation_evidence.md) を参照。CI NOT RUN（runner未起動）。
 - 未成立は変わらない: global fencing、本番cutover、正式ACK、原本のない旧v1 recordのRLI2移行、Windows directory durability（UNKNOWN）、実車。
