@@ -612,3 +612,11 @@ Agentは既存の未マージ[PR80](https://github.com/zawa356/RomRaider_agent/p
 - Agentの実Server E2Eは引き続きServer `d8c7a2f` を固定checkoutしてPostgreSQL16で実行する。本リポジトリの「Product v1 actual Java Agent to PostgreSQL E2E」は固定の旧Agent snapshotを使うため、最新Agentの証明にはならない（最新AgentはAgent側workflowで裏付け）。
 - Server runtime・schema・wire・migrationは`d8c7a2f`のまま。本統合ブランチ（`integration/server-phase-v-ix-docs`）は#62〜#65の7コミットをSHAのまま含み、この進捗文書だけを変更する。Agent #105のmain統合後に、本節を実際の統合結果へ更新してから取り込む。
 - owner判断待ち：RLDI2/F-IX-1、JNA配布ライセンス、FILE_SHARE_DELETE、Windows ACL合格条件。production/launch/ACKは無効のまま。
+
+## 2026-10-22 追記 — Agent main 統合の実結果（Server runtime 変更なし、本 PR は未マージ）
+
+- 上の節は統合前（#105 Draft 時点）の記述として残す。owner の承認により Agent [#105](https://github.com/zawa356/RomRaider_agent/pull/105) を **merge commit** で main へマージ済み（2026-10-22 13:47:37 UTC）。Agent main は `4f80c5e` → **`7fdb4db893828718621ce8965664a89e36b9281a`**（親 `4f80c5e`・`05a2f40`）。main の tree `62aedefe…` は #105 head の tree と一致。
+- #80〜#104 の25本の head はすべて Agent main の祖先（回収した #91/#92 の docs 4コミットを含む）。GitHub が自動で merged にしたのは base=main の #80 のみ。#81〜#104 は Draft・open のまま（base がスタック用ブランチのため）。ブランチは削除していない。
+- Agent main への push で実行された Actions の結果は、Agent 側の Phase X-B 証跡と、この PR の本文・コメントで参照する。
+- 変わらないもの：synthetic_only、launch/production/ACK 無効、formal_ack=DISABLED、reader_adoption=BLOCKED、WRITER_UNPROVEN、Windows ACL UNKNOWN、global old-binary exclusion NOT_PROVEN。Agent の実 Server E2E は Server `d8c7a2f` を固定して実行。Server runtime・schema・wire・migration は `d8c7a2f` のまま。
+- 本 Server PR（#66）は owner の再レビュー待ちで、未マージ。
