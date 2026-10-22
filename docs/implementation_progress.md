@@ -604,3 +604,11 @@ Agentは既存の未マージ[PR80](https://github.com/zawa356/RomRaider_agent/p
 - Phase IX-2/3（#98/#99）：Windows製品Reader候補RLWR1（JNA、同一handleからidentity/長さ/bytes、fail-closed codes）を合成実装し、x64と実Zulu8 x86で試験。entryの新reader値`WINDOWS_NATIVE_V1_SYNTHETIC`で合成ownedのみ接続（test JARなし、JNA hash固定）。**採用はBLOCKED**：FILE_SHARE_DELETE、JNA配布ライセンス、最小Windows版はowner判断待ち。
 - Phase IX-4（#100）：RLDI1で同size/同mtimeのbytes差替え・物理差替えがMATCHEDになる欠陥を再現（RED）し、identity＋hash再検証で修正。新発見F-IX-1：entry自身の必須依存JAR（sqlite-jdbc、JNA）がmain/Manifest Main-Class/multi-release classを含むため、実配布ディレクトリはRLDI1 MATCHEDにならない（緩和せずowner/設計判断）。
 - 原本・ACK・Server wire/schemaは不変。production/launch/ACKは無効、WRITER_UNPROVEN、Windows provenance/durability/ACLはUNKNOWN、global old-binary exclusionはNOT_PROVEN。Server pytest/migrationはこの期間に再実行していない（Server変更なし）。正本：[Phase IX report](https://github.com/zawa356/RomRaider_agent/blob/phase9/distribution-hardening/docs/handoff/phase9_report.md)。
+
+## 2026-10-22 — Agent Phase X-A/X-B 統合準備（Server runtime変更なし、Agent・Server とも main 未マージ）
+
+- 上記 2026-10-21 節の「CIはjobs steps=0でNOT RUN」は当時の事実。その後リポジトリ公開によりGitHub Actionsが再開し（Agent #101〜#103）、Agent #104（Phase X-A、`e8e2c54`）は4ワークフロー×attempt2・3で13/13 jobs成功（attempt1のWindows 1 jobはMaven Central HTTP 429で試験未実行）。
+- Agent統合Draft PR [#105](https://github.com/zawa356/RomRaider_agent/pull/105)（base=main）を作成。#80〜#104の全HEADをSHAのまま内包し、#92/#91の欠落docsコミット4件を非fast-forwardマージで回収。RLDI1のJAR全エントリ検証（CRC-32・DEFLATE終端・サイズ・展開量上限）をX-Bで追加。**#105はmain未マージ**であり、ownerの明示承認まで統合済みとは扱わない。
+- Agentの実Server E2Eは引き続きServer `d8c7a2f` を固定checkoutしてPostgreSQL16で実行する。本リポジトリの「Product v1 actual Java Agent to PostgreSQL E2E」は固定の旧Agent snapshotを使うため、最新Agentの証明にはならない（最新AgentはAgent側workflowで裏付け）。
+- Server runtime・schema・wire・migrationは`d8c7a2f`のまま。本統合ブランチ（`integration/server-phase-v-ix-docs`）は#62〜#65の7コミットをSHAのまま含み、この進捗文書だけを変更する。Agent #105のmain統合後に、本節を実際の統合結果へ更新してから取り込む。
+- owner判断待ち：RLDI2/F-IX-1、JNA配布ライセンス、FILE_SHARE_DELETE、Windows ACL合格条件。production/launch/ACKは無効のまま。
