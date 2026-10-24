@@ -550,3 +550,73 @@ Agent [PR70](https://github.com/zawa356/RomRaider_agent/pull/70)/[71](https://gi
 - Server main `bb27cd1` を、専用のloopbackテストDBで再検証した。migration upgradeの2回実行とcheckがexit0、pytest 57 passed（warning 1件）。
 - 詳細は [Agent Phase IV報告](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/phase4_report.md) と [証跡](https://github.com/zawa356/RomRaider_agent/blob/main/docs/handoff/phase4_validation_evidence.md) を参照。CI NOT RUN（runner未起動）。
 - 未成立は変わらない: global fencing、本番cutover、正式ACK、原本のない旧v1 recordのRLI2移行、Windows directory durability（UNKNOWN）、実車。
+
+## 2026-10-19 — Phase V Agent provenance/staging hardening (Server runtime unchanged)
+
+Agent [PR80](https://github.com/zawa356/RomRaider_agent/pull/80), implementation `b4b909cc3111c11e58f35b7600e47bea1d6aadfa`, fixes UUID-only journal-cursor provenance, asymmetric duplicate-source handling and incomplete Vault/RLI2 verification. It compares full cursor owner/path/RLC1 payload chain/metadata, retained v1 JSON/canonical fields and actual physical RLC2 source identity; freezes projections; independently verifies all typed Vault columns/schema and all8 exact RLI2 table sets. Historical ACKed NULL bodies remain valid; missing unACKed bodies remain UNKNOWN. Dedicated private staging files are published without overwriting final targets; partial attempts and competitor bytes are preserved. New-path ACK/sending remains disabled.
+
+Server base/runtime head is `d8c7a2f3b96ba278d269074dc40cca7741b4155b`; this progress update changes no Server runtime, migrations, schema or wire contract. Independent dedicated test-DB upgrade twice/check exited0, pytest57 passed/1warning. Actual FastAPI/invocation-owned PG HTTP35 also passed (stop503/noACK/restart, dropped committed response/retry, unchanged Agent ACK bytes). Exact Agent platform/head/log evidence is in the [Phase V report](https://github.com/zawa356/RomRaider_agent/blob/phase5/provenance-hardening/docs/handoff/phase5_report.md) and [validation evidence](https://github.com/zawa356/RomRaider_agent/blob/phase5/provenance-hardening/docs/handoff/phase5_validation_evidence.md).
+
+At final implementation head, focused61 cases pass on Windows JDK17x64 and actual Zulu8x86 (JVM32). Final Linux/full Windows/owned HTTP/load results will be synchronized below after completion; pending results are not PASS. Agent #79 and Server #61 were already merged before Phase V and required no base adjustment. Phase V PRs stay unmerged: latest Actions failures have zero steps (CI NOT RUN), and the supplied Phase V policy prohibits merge without executed CI. No redispatch/billing changes.
+
+Remaining gates include F3 mapped-network-drive detection, old-binary exclusion, extra Transition/SQLite lock/path fault fixtures, global fencing, Windows process/directory provenance/durability UNKNOWN, physical power loss/realENOSPC and production/real-car acceptance. Full v1 inventory remains in RMI1/unchanged v1; RLLV1 is experimental record evidence, not a complete database backup or approved product storage version.
+
+Final implementation b4b909c Linux61 focused cases, Phase III/IV, full candidate/schema/snapshot/JVM regression, exact10000 staging and10000+10sessions load all pass. Final-head actual x86 staging10000 and owned HTTP35 pass. A frozen exact-head Windows full x64/x86 batch is still running; its outcome will be appended after completion. Current focused/platform results do not imply product/production acceptance.
+
+Agent final entry-guard head `928d43fb96452b4e4f989352d8627549c1e23a4d` adds exactly one early dedicated RLI2 final-name check to broad baseline b4b909c. A valid-source RED demonstrated acceptance of product.db before this guard. Final focused62 cases pass on Windows17x64, real Zulu8x86(JVM32), Linux17. Broad/load/HTTP results remain explicitly at b4b909c; no cross-head relabelling. Server runtime still d8c7a2f and unchanged.
+
+Final broad Windows acceptance at b4b909c completed exit0: full JDK17x64/actual Zulu8x86 batch,2533 PASS lines (Phase III/IV/product/spool/ingress/SQLite/preview/integration/ownership/copy/native plus focused61 per architecture). Log SHA256769fac249566bf33d38bfdddeef4f91fe325ca2e71d7164b44c7f94e2cd11504. Final guard928d43f focused62×Windows64/actual32/Linux remains separate evidence; no cross-head PASS claim. Optional direct PostgreSQL preview was not enabled in the batch; actual owned HTTP35/Server57 were separately verified. Shared55432 remained ready, own HTTP cluster stopped. CI remains unexecuted, so Agent80/Server62 remain unmerged under the current instructions. P1/P2 gaps are explicit in the Agent report/followups; no production/ACK enabling.
+## 2026-10-20 — Phase VI Agent安全候補（Server runtime変更なし、未マージ）
+
+Agentは既存の未マージ[PR80](https://github.com/zawa356/RomRaider_agent/pull/80)のhead7da38372044792cde5271932a6134b7c6f156ccbを基準に、[81](https://github.com/zawa356/RomRaider_agent/pull/81)→[82](https://github.com/zawa356/RomRaider_agent/pull/82)→[83](https://github.com/zawa356/RomRaider_agent/pull/83)→[84](https://github.com/zawa356/RomRaider_agent/pull/84)→[85](https://github.com/zawa356/RomRaider_agent/pull/85)をstackした。最終runtime/tests固定headはd3941031af4d22c7317055c6d9439cf10e75e364。すべてdefault-off/synthetic-only、未マージ。本Server文書も既存#62のブランチを基準にstackし、重複反映やmainの巻戻しはしない。
+
+- 実子JVMで再現したvault-onlyの後発journal見落とし、旧Lane保持中のabandon、出力親差替え後の競合内部DBへの書込みを修正。旧DBの独立snapshot、abandon時の新旧Lane/Publication保持観測、staging親/workのnative物理ID再確認を追加した。
+- Windows配置ではFSアクセス前にGetDriveTypeW/QueryDosDeviceWでFixed/localを確認。Remote/Unknown/subst/timeout/不明出力は拒否する。実SMBはNOT RUNで、mountや未知共有へのアクセスはしていない。
+- offline preflightはJAR順序/hash、Java/bitness、世代/manifest/admission、既存lockをread-onlyで検査する。Writer不在はWRITER_UNPROVEN、Windows process/directory durabilityはUNKNOWNで、launch_authorized/production_authorized/ack_eligibleはfalse。正常launcher・旧binaryの普遍的排除・完全な製品readinessはPartialであり、実装済みとしない。
+- 前段の固定headでWriter161チェックはWindows17x64/実Zulu8x86/Linux17、drive37チェックとpreflight41チェックはWindows17x64/実x86で成功。最終d394103のWindows全体batch・Linux/loadは実行中で、前段PASSとは区別する。Linux初回はfixture lockの権限をUNSAFE_ACCESSで拒否し、失敗を保全したうえでprivate fixture生成条件を明示して同じコードを再検証中。
+- 今回のServer再検証はhead056958dd1973106173e0e9b4c8664324c001ad8a（runtimeはmain d8c7a2f3b96ba278d269074dc40cca7741b4155bと同一）で、専用隔離PG55432のmigration upgrade二度/check exit0、pytest57 passed/1warning。事前にreadyを確認し、既存test serviceのstart/stop/restartはしていない。runtime/schema/wire/migration/Sender接続は変更しない。
+
+正本はmainではなく[Phase VI branch Bootstrap](https://github.com/zawa356/RomRaider_agent/blob/phase6/staging-parent-identity/docs/ops/development_environment_bootstrap.md)→[報告](https://github.com/zawa356/RomRaider_agent/blob/phase6/staging-parent-identity/docs/handoff/phase6_overnight_report.md)→[固定head検証証跡](https://github.com/zawa356/RomRaider_agent/blob/phase6/staging-parent-identity/docs/handoff/phase6_overnight_evidence.md)。最新完了/失敗/再開点をそこで確認する。CIはrunner未開始のNOT RUNであり、本セッションではAgent/Serverの全PR（既存#80/#62を含む）をマージしない。正式ACK・実車・本番移行・自動Sender・既存Worker/サービス操作は無効。
+### Phase VI 最終入口差分は53f18a2、広域基準はd394103
+
+追加[Agent PR86](https://github.com/zawa356/RomRaider_agent/pull/86)で、RLDT1 planのchain読取りとcommitのlock作成より前にdrive proofを行う。最終runtime/testsは53f18a27663c0f7f9c8f2398fd3390190f5f5749、d394103の広域検証とは区別する。最新の[Bootstrap](https://github.com/zawa356/RomRaider_agent/blob/phase6/transition-drive-preflight/docs/ops/development_environment_bootstrap.md)→[報告](https://github.com/zawa356/RomRaider_agent/blob/phase6/transition-drive-preflight/docs/handoff/phase6_overnight_report.md)→[証跡](https://github.com/zawa356/RomRaider_agent/blob/phase6/transition-drive-preflight/docs/handoff/phase6_overnight_evidence.md)はPR86のbranchを正本とする。Server runtimeは引き続き変更なし。全PR未マージ、起動/本番/正式ACKは無効。
+### Phase VI 最終検証完了 — 2026-10-20
+
+- 最終runtime/tests53f18a2はWindows JDK17x64／実Zulu1.8.0_504 x86（model32 assert）でdrive37・入口順序6・preflight41・transition59＋子lock補助・Phase IV回帰がすべてexit0。Linux17でもPhase VI/III/IV/Vがexit0。正常launcher・Windows process真正性・非協調Writer不在の証明は実装済みとせず、launch/production/ACKはfalseのまま。
+- **別headの広域基準d394103**は、Windows全体x64/x86 batchがexit0、3181 PASS行、約60.37分。log SHA256a52a1a9aa70be4b78d16e8ea0052d4a891bce05d9374d014ce69fdc92f16aa43。実x86 staging10000records/10001receiptsもexit0。Linuxは11sessions/10100records/10111receipts/11bindings/22admissions、staging10000、bound10003が成功。最終差分の全広域PASSと読み替えない。
+- 実FastAPI/invocation-owned PG HTTP35はd394103 fixtureで成功。自前clusterのimmediate-stop→503/noACK→restart→最終stopを実行し、Agent bytes/ACK不変。既存55432を停止していない。Server runtimeはd8c7a2fと同一、migration二度/check0、pytest57 passed/1warning。Serverの変更はこの進捗文書のみ。
+- Windowsの25世代連続publish進行はreplacement拒否でBLOCKED（旧/staged/原本bytes保全、repairなし）。これは全面的な進行保証ではない。true symbolic link権限試験、実SMB、physical power loss、real ENOSPC、実車はNOT RUN。新規専用fixtureのWindows junctionは実行成功。Windows directory durabilityはUNKNOWN、global fencingと完全な旧binary排除は未成立。
+- 全Agent/Server PRは未マージ。CIはsteps0のrunner未開始、NOT RUN。billing/dispatch/mergeなし。実測に基づくCI最大時間だけsingle-OS60分／full Windows90分へ変更（構文確認のみ、CI PASSではない）。詳細なhead・失敗・log hash・再開点は最新[Agent証跡](https://github.com/zawa356/RomRaider_agent/blob/phase6/transition-drive-preflight/docs/handoff/phase6_overnight_evidence.md)に集約する。
+
+## 2026-10-20 — Phase VII Agent単一offline candidate入口（Server runtime変更なし、未マージ）
+
+- Agent PR86→[87](https://github.com/zawa356/RomRaider_agent/pull/87)→[88](https://github.com/zawa356/RomRaider_agent/pull/88)→[89](https://github.com/zawa356/RomRaider_agent/pull/89)→[90](https://github.com/zawa356/RomRaider_agent/pull/90)→[91](https://github.com/zawa356/RomRaider_agent/pull/91)、全てdraft・未マージ。最終product runtime 67657d9、最終tests d93a975。
+- 独立レビュー（Claude Code）でF1を再現：preflightが承認していた`Rlc2IntegrationCli`は、実子JVMがLane/Publication lockを保持中でも候補DBへ書込めた。新`OfflineCandidateEntry`（RLOE1）のみを承認入口にし、RLOP1起動profile（main class・JAR順序/hash・Java実行体/x86-x64・user・作業dir・owner/data root）、RLSO1所有marker（DB open前に物理identity照合）、supervisorが起動する単一子JVM（`ingestBoundActive`経由のみ書込み）を必須化。diagnoseは常時BLOCKED、production liveは常時拒否。
+- 統合readiness RLIR1（15軸、status/code/next）を追加。ただし別reviewセッションがVII-C2（v1 record 0件でclaims/cursorsがあるとcursor PASS扱い）を再現しており、修正は別branchで進行中。
+- 合成owned E2E：複数Source保存→再起動0件→rotation→RLDT1でSource明示admission→再pin→子JVM強制kill（commit前・atomic）→再試行→readiness。**実FastAPI/Uvicorn＋invocation-owned PG16で35 checks**（応答喪失/再送、409/422/503、自前PG immediate stop/restart）、Agent候補bytes不変、既存55432は停止せず。Server test ACKはAgent ACKではない。
+- Windows JDK17 x64／実Zulu8 x86／Linux17でPhase VII全suite exit0（d93a975）。Phase VI/V/IV回帰はWindows x64・Linuxで67657d9 exit0。Server runtimeはd8c7a2fのまま、pytest57/migrationはPhase VIIで再実行していない。
+- 非協調Writer不在はWRITER_UNPROVEN（sidecarなしBEGIN IMMEDIATE/EXCLUSIVEで再現）、Windows process provenance/directory durabilityはUNKNOWN、旧Worker/Sender/CLIは未fence。CIはsteps0でNOT RUN。正本は[Phase VII報告](https://github.com/zawa356/RomRaider_agent/blob/phase7/adversarial/docs/handoff/phase7_report.md)／[証跡](https://github.com/zawa356/RomRaider_agent/blob/phase7/adversarial/docs/handoff/phase7_validation_evidence.md)。
+
+## 2026-10-21 — Phase VIII/IX Agent進捗（Server runtime変更なし、未マージ）
+
+- Agent stack: PR92（Phase VIIレビューclosure）→93（RLDI1 inventory）→94（RLIR1 readiness CLI）→95（RLMS1 10セッション）→96（副main分離）→[97](https://github.com/zawa356/RomRaider_agent/pull/97)→[98](https://github.com/zawa356/RomRaider_agent/pull/98)→[99](https://github.com/zawa356/RomRaider_agent/pull/99)→[100](https://github.com/zawa356/RomRaider_agent/pull/100)。全てdraft・未マージ。CIはjobs steps=0でNOT RUN。
+- Phase IX-1（#97）：#96の4 CLIがどのscriptでもbuildされずドキュメント記載の起動が`ClassNotFoundException`になる点を再現し、別tool JARの明示build＋実子JVM試験で修正。x64 multisession初回`CreateProcess error=267`は、%TEMP%配下の空`work`ディレクトリが外部清掃で一括削除されたことと整合（実行者はROOT_CAUSE_NOT_PROVEN）。entryは`WORKING_DIRECTORY_MISSING`で子起動前に拒否。
+- Phase IX-2/3（#98/#99）：Windows製品Reader候補RLWR1（JNA、同一handleからidentity/長さ/bytes、fail-closed codes）を合成実装し、x64と実Zulu8 x86で試験。entryの新reader値`WINDOWS_NATIVE_V1_SYNTHETIC`で合成ownedのみ接続（test JARなし、JNA hash固定）。**採用はBLOCKED**：FILE_SHARE_DELETE、JNA配布ライセンス、最小Windows版はowner判断待ち。
+- Phase IX-4（#100）：RLDI1で同size/同mtimeのbytes差替え・物理差替えがMATCHEDになる欠陥を再現（RED）し、identity＋hash再検証で修正。新発見F-IX-1：entry自身の必須依存JAR（sqlite-jdbc、JNA）がmain/Manifest Main-Class/multi-release classを含むため、実配布ディレクトリはRLDI1 MATCHEDにならない（緩和せずowner/設計判断）。
+- 原本・ACK・Server wire/schemaは不変。production/launch/ACKは無効、WRITER_UNPROVEN、Windows provenance/durability/ACLはUNKNOWN、global old-binary exclusionはNOT_PROVEN。Server pytest/migrationはこの期間に再実行していない（Server変更なし）。正本：[Phase IX report](https://github.com/zawa356/RomRaider_agent/blob/phase9/distribution-hardening/docs/handoff/phase9_report.md)。
+
+## 2026-10-22 — Agent Phase X-A/X-B 統合準備（Server runtime変更なし、Agent・Server とも main 未マージ）
+
+- 上記 2026-10-21 節の「CIはjobs steps=0でNOT RUN」は当時の事実。その後リポジトリ公開によりGitHub Actionsが再開し（Agent #101〜#103）、Agent #104（Phase X-A、`e8e2c54`）は4ワークフロー×attempt2・3で13/13 jobs成功（attempt1のWindows 1 jobはMaven Central HTTP 429で試験未実行）。
+- Agent統合Draft PR [#105](https://github.com/zawa356/RomRaider_agent/pull/105)（base=main）を作成。#80〜#104の全HEADをSHAのまま内包し、#92/#91の欠落docsコミット4件を非fast-forwardマージで回収。RLDI1のJAR全エントリ検証（CRC-32・DEFLATE終端・サイズ・展開量上限）をX-Bで追加。**#105はmain未マージ**であり、ownerの明示承認まで統合済みとは扱わない。
+- Agentの実Server E2Eは引き続きServer `d8c7a2f` を固定checkoutしてPostgreSQL16で実行する。本リポジトリの「Product v1 actual Java Agent to PostgreSQL E2E」は固定の旧Agent snapshotを使うため、最新Agentの証明にはならない（最新AgentはAgent側workflowで裏付け）。
+- Server runtime・schema・wire・migrationは`d8c7a2f`のまま。本統合ブランチ（`integration/server-phase-v-ix-docs`）は#62〜#65の7コミットをSHAのまま含み、この進捗文書だけを変更する。Agent #105のmain統合後に、本節を実際の統合結果へ更新してから取り込む。
+- owner判断待ち：RLDI2/F-IX-1、JNA配布ライセンス、FILE_SHARE_DELETE、Windows ACL合格条件。production/launch/ACKは無効のまま。
+
+## 2026-10-22 追記 — Agent main 統合の実結果（Server runtime 変更なし、本 PR は未マージ）
+
+- 上の節は統合前（#105 Draft 時点）の記述として残す。owner の承認により Agent [#105](https://github.com/zawa356/RomRaider_agent/pull/105) を **merge commit** で main へマージ済み（2026-10-22 13:47:37 UTC）。Agent main は `4f80c5e` → **`7fdb4db893828718621ce8965664a89e36b9281a`**（親 `4f80c5e`・`05a2f40`）。main の tree `62aedefe…` は #105 head の tree と一致。
+- #80〜#104 の25本の head はすべて Agent main の祖先（回収した #91/#92 の docs 4コミットを含む）。GitHub が自動で merged にしたのは base=main の #80 のみ。#81〜#104 は Draft・open のまま（base がスタック用ブランチのため）。ブランチは削除していない。
+- Agent main への push で実行された Actions の結果は、Agent 側の Phase X-B 証跡と、この PR の本文・コメントで参照する。
+- 変わらないもの：synthetic_only、launch/production/ACK 無効、formal_ack=DISABLED、reader_adoption=BLOCKED、WRITER_UNPROVEN、Windows ACL UNKNOWN、global old-binary exclusion NOT_PROVEN。Agent の実 Server E2E は Server `d8c7a2f` を固定して実行。Server runtime・schema・wire・migration は `d8c7a2f` のまま。
+- 本 Server PR（#66）は owner の再レビュー待ちで、未マージ。
