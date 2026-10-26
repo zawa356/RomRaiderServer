@@ -620,3 +620,18 @@ Agentは既存の未マージ[PR80](https://github.com/zawa356/RomRaider_agent/p
 - Agent main への push で実行された Actions の結果は、Agent 側の Phase X-B 証跡と、この PR の本文・コメントで参照する。
 - 変わらないもの：synthetic_only、launch/production/ACK 無効、formal_ack=DISABLED、reader_adoption=BLOCKED、WRITER_UNPROVEN、Windows ACL UNKNOWN、global old-binary exclusion NOT_PROVEN。Agent の実 Server E2E は Server `d8c7a2f` を固定して実行。Server runtime・schema・wire・migration は `d8c7a2f` のまま。
 - 本 Server PR（#66）は owner の再レビュー待ちで、未マージ。
+
+## 2026-10-26 追記 — 現在地の訂正（Server runtime・schema・API 変更なし、docs のみ）
+
+- 上の 2026-10-22 節の「本 Server PR（#66）は owner の再レビュー待ちで、未マージ」「#81〜#104 は Draft・open のまま」は**当時の記述**として残す。
+  現在：Server [#66](https://github.com/zawa356/RomRaiderServer/pull/66) は **2026-10-24 11:57 UTC にマージ済み**（Server `main` = `3f16a701fb6fe1b0f94780f8dfef1ec38515dd84`）。
+  Agent の旧 stack PR #81〜#104 は Close 済み（ブランチ保持、再利用しない）。
+- Agent Phase X-C（RLDI2 依存 JAR 候補・Windows Reader 判断資料）は [#106](https://github.com/zawa356/RomRaider_agent/pull/106) を merge commit で統合済み
+  （2026-10-26 05:35 UTC、Agent `main` = `bcc81566b2c90b61de88ec0fb7fb3bf43631e0f9`）。
+- Agent Phase X-D は Draft・未マージ：文書トラック [#107](https://github.com/zawa356/RomRaider_agent/pull/107)、実装 [#108](https://github.com/zawa356/RomRaider_agent/pull/108)
+  （RLDR1 required-dependency readiness 候補、Java API のみ・default-off）。Server 側の要件・コード変更は不要。
+- 2026-10-26 の Server 側試験（synthetic、本番 DB 不使用）：Windows 開発 VM の隔離 PG16（127.0.0.1:55432）で Server `main` `3f16a70` の
+  migrate upgrade×2/check と pytest 57 passed。別 Docker ホストの新規隔離 project（PG16 tmpfs、公開 port なし）で Agent→FastAPI→PostgreSQL E2E と
+  RLC2 実 HTTP 35 checks を Server `d8c7a2f`（CI 固定値）と `3f16a70` の両方で PASS。詳細は Agent 側 X-D evidence。
+- 変わらないもの：synthetic_only、launch/production/ACK 無効、formal_ack=DISABLED、reader_adoption=BLOCKED、WRITER_UNPROVEN、Windows ACL UNKNOWN、
+  global old-binary exclusion NOT_PROVEN。開発 Phase（I〜X-D）と製品受入 D0〜D7 は別軸で、本追記は受入達成率を示さない。
